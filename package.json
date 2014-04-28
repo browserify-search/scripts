@@ -1,0 +1,24 @@
+{
+  "name": "browserifiability",
+  "version": "0.0.0",
+  "description": "Test modules for browserifiability.",
+  "main": "npm_install.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Toby Ho",
+  "license": "MIT",
+  "dependencies": {
+    "is-type": "0.0.1",
+    "jsdom": "^0.10.5",
+    "debug": "^0.8.0",
+    "mkdirp": "^0.4.0",
+    "mongodb": "^1.4.2",
+    "cmd-ln": "0.0.1",
+    "npm": "git://github.com/airportyh/npm",
+    "queue": "^2.2.0",
+    "npmlog": "0.0.6",
+    "module-deps": "^1.10.0",
+    "browser-resolve": "^1.2.4"
+  }
+}

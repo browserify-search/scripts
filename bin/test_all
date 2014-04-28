@@ -1,0 +1,54 @@
+#! /usr/bin/env node
+
+var db = require('../lib/db')
+var testModule = require('../lib/test_module')
+var iterate = require('../lib/mongo/iterate_cursor')
+var upsert = require('../lib/mongo/upsert')
+var findOne = require('../lib/mongo/find_only_one')
+var log = require('npmlog')
+
+db(function(err, db){
+  if (err) return log.error(err.message)
+
+  var modules = db.collection('modules')
+
+  var cursor = modules
+    .find(
+      {'testResults.improved': null},
+      {name: true})
+
+
+  iterate(cursor, 
+    function(module, next){
+      testModule(module.name, '/tmp/browserify-search', function(err, results){
+        if (err) return next(err)
+        
+        displayResults(module, results)
+        findOne(modules, {name: module.name}, function(err, mdoc){
+          mdoc.testResults = results;
+          mdoc.testResults.improved = true
+          mdoc.browserify = results.install.passed && 
+            results.browserify.passed;
+          upsert(modules, 'name', mdoc, function(err){
+            if (err) return next(err)
+            next()
+          })
+        })
+      })
+    }, function(err){
+      if (err) console.error(err.message)
+      log.info('ok')
+      db.close()
+    })
+})
+
+function displayResults(module, results){
+  if (results.install.passed && results.browserify.passed){
+    log.info(module.name + ':', 'worked')
+  }else{
+    log.error(module.name + ':', 
+      'failed', 
+      results.install.error, 
+      results.browserify.error)
+  }
+}
