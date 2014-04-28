@@ -12,21 +12,37 @@ db(function(err, db){
 
   var modules = db.collection('modules')
 
+  var version = 2
+  var criteria = {
+    $or: [
+      {'testResults.version': {$lt: version}}, 
+      {'testResults.version': null}
+    ]
+  }
+
   var cursor = modules
     .find(
-      {'testResults.improved': null},
+      criteria,
       {name: true})
+    .limit(5)
 
 
   iterate(cursor, 
     function(module, next){
       testModule(module.name, '/tmp/browserify-search', function(err, results){
-        if (err) return next(err)
-        
+        if (err){
+          // this shouldn't happen
+          log.error(module.name + ':', err.message)
+          return next(err)
+        }
         displayResults(module, results)
         findOne(modules, {name: module.name}, function(err, mdoc){
+          if (err){
+            log.error(module.name + ':', err.message)
+            return next(err)
+          }
           mdoc.testResults = results;
-          mdoc.testResults.improved = true
+          mdoc.testResults.version = version
           mdoc.browserify = results.install.passed && 
             results.browserify.passed;
           upsert(modules, 'name', mdoc, function(err){
@@ -43,12 +59,15 @@ db(function(err, db){
 })
 
 function displayResults(module, results){
-  if (results.install.passed && results.browserify.passed){
-    log.info(module.name + ':', 'worked')
+  var passed = 
+    results.install.passed &&
+    results.browserify.bundle.passed &&
+    results.browserify.test.passed
+  if (passed){
+    log.info(module.name + ':', 'worked', results)
   }else{
     log.error(module.name + ':', 
       'failed', 
-      results.install.error, 
-      results.browserify.error)
+      results)
   }
 }
