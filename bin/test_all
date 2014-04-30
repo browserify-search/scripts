@@ -6,56 +6,60 @@ var iterate = require('../lib/mongo/iterate_cursor')
 var upsert = require('../lib/mongo/upsert')
 var findOne = require('../lib/mongo/find_only_one')
 var log = require('npmlog')
+var cmdLn = require('cmd-ln')
 
-db(function(err, db){
-  if (err) return log.error(err.message)
+cmdLn(function(dir){
+  db(function(err, db){
+    if (err) return log.error(err.message)
 
-  var modules = db.collection('modules')
+    var modules = db.collection('modules')
 
-  var version = 2
-  var criteria = {
-    $or: [
-      {'testResults.version': {$lt: version}}, 
-      {'testResults.version': null}
-    ]
-  }
+    var version = 2
+    var criteria = {
+      $or: [
+        {'testResults.version': {$lt: version}}, 
+        {'testResults.version': null}
+      ]
+    }
 
-  var cursor = modules
-    .find(
-      criteria,
-      {name: true})
-    .limit(5)
+    var cursor = modules
+      .find(
+        criteria,
+        {name: true})
+      .limit(5)
 
 
-  iterate(cursor, 
-    function(module, next){
-      testModule(module.name, '/tmp/browserify-search', function(err, results){
-        if (err){
-          // this shouldn't happen
-          log.error(module.name + ':', err.message)
-          return next(err)
-        }
-        displayResults(module, results)
-        findOne(modules, {name: module.name}, function(err, mdoc){
+    iterate(cursor, 
+      function(module, next){
+        testModule(module.name, dir, function(err, results){
           if (err){
+            // this shouldn't happen
             log.error(module.name + ':', err.message)
             return next(err)
           }
-          mdoc.testResults = results;
-          mdoc.testResults.version = version
-          mdoc.browserify = results.install.passed && 
-            results.browserify.passed;
-          upsert(modules, 'name', mdoc, function(err){
-            if (err) return next(err)
-            next()
+          displayResults(module, results)
+          findOne(modules, {name: module.name}, function(err, mdoc){
+            if (err){
+              log.error(module.name + ':', err.message)
+              return next(err)
+            }
+            mdoc.testResults = results;
+            mdoc.testResults.version = version
+            mdoc.browserify = results.install.passed && 
+              results.browserify.passed;
+            upsert(modules, 'name', mdoc, function(err){
+              if (err) return next(err)
+              next()
+            })
           })
         })
+      }, function(err){
+        if (err) console.error(err.message)
+        log.info('ok')
+        db.close()
       })
-    }, function(err){
-      if (err) console.error(err.message)
-      log.info('ok')
-      db.close()
-    })
+  })
+
 })
 
 function displayResults(module, results){
