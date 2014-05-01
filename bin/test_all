@@ -14,7 +14,7 @@ cmdLn(function(dir){
 
     var modules = db.collection('modules')
 
-    var version = 2
+    var version = 4
     var criteria = {
       $or: [
         {'testResults.version': {$lt: version}}, 
@@ -26,7 +26,7 @@ cmdLn(function(dir){
       .find(
         criteria,
         {name: true})
-      .limit(5)
+      
 
 
     iterate(cursor, 
