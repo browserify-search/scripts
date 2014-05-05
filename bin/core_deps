@@ -1,0 +1,12 @@
+#! /usr/bin/env node
+
+var coreDeps = require('../lib/core_deps')
+var cmdLn = require('cmd-ln')
+var path = require('path')
+
+cmdLn(function(dir){
+  coreDeps(path.resolve(dir), function(err, results){
+    if (err) return console.error(err.message)
+    console.log(results)
+  })
+})
