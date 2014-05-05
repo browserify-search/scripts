@@ -10,7 +10,7 @@ var cmdLn = require('cmd-ln')
 var assert = require('assert')
 var is = require('is-type')
 
-cmdLn(function(number){
+cmdLn(function(_number){
   var dir = '/tmp/browserify-search'
 
   db(function(err, db){
@@ -32,11 +32,11 @@ cmdLn(function(number){
         criteria,
         {name: true})
 
-    if (number === '*'){
-      // test'em all!!!
-    }else{
-      assert(is.number(Number(number)))
-      cursor = cursor.limit(Math.floor(Number(number)))
+    if (_number){
+      var num = Number(_number)
+      assert(is.number(num))
+      assert(Math.floor(num) === num)
+      cursor = cursor.limit(num)
     }
 
     iterate(cursor, 

@@ -14,7 +14,7 @@
     "debug": "^0.8.0",
     "mkdirp": "^0.4.0",
     "mongodb": "^1.4.2",
-    "cmd-ln": "0.0.1",
+    "cmd-ln": "0.1.0",
     "npm": "git://github.com/airportyh/npm",
     "queue": "^2.2.0",
     "npmlog": "0.0.6",
