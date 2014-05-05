@@ -8,13 +8,16 @@ var findOne = require('../lib/mongo/find_only_one')
 var log = require('npmlog')
 var cmdLn = require('cmd-ln')
 
-cmdLn(function(dir){
+cmdLn(function(){
+  var dir = '/tmp/browserify-search'
+
   db(function(err, db){
     if (err) return log.error(err.message)
 
     var modules = db.collection('modules')
 
     var version = 4
+
     var criteria = {
       $or: [
         {'testResults.version': {$lt: version}}, 
