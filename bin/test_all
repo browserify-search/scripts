@@ -7,8 +7,10 @@ var upsert = require('../lib/mongo/upsert')
 var findOne = require('../lib/mongo/find_only_one')
 var log = require('npmlog')
 var cmdLn = require('cmd-ln')
+var assert = require('assert')
+var is = require('is-type')
 
-cmdLn(function(){
+cmdLn(function(number){
   var dir = '/tmp/browserify-search'
 
   db(function(err, db){
@@ -29,8 +31,13 @@ cmdLn(function(){
       .find(
         criteria,
         {name: true})
-      
 
+    if (number === '*'){
+      // test'em all!!!
+    }else{
+      assert(is.number(Number(number)))
+      cursor = cursor.limit(Math.floor(Number(number)))
+    }
 
     iterate(cursor, 
       function(module, next){
