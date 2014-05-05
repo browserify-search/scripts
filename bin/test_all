@@ -39,8 +39,12 @@ cmdLn(function(_number){
       cursor = cursor.limit(num)
     }
 
+    var startTime
+    var modulesProcessed = 0
+
     iterate(cursor, 
       function(module, next){
+        if (!startTime) startTime = +new Date
         testModule(module.name, dir, function(err, results){
           if (err){
             // this shouldn't happen
@@ -59,13 +63,18 @@ cmdLn(function(_number){
               results.browserify.passed;
             upsert(modules, 'name', mdoc, function(err){
               if (err) return next(err)
+              modulesProcessed++
               next()
             })
           })
         })
       }, function(err){
+        var endTime = +new Date
         if (err) console.error(err.message)
         log.info('ok')
+        var duration = endTime - startTime
+        log.info('Total time:', duration + 'ms')
+        log.info('Time per module:', (duration / modulesProcessed) + 'ms')
         db.close()
       })
   })
@@ -73,15 +82,5 @@ cmdLn(function(_number){
 })
 
 function displayResults(module, results){
-  var passed = 
-    results.install.passed &&
-    results.browserify.bundle.passed &&
-    results.browserify.test.passed
-  if (passed){
-    log.info(module.name + ':', 'worked', results)
-  }else{
-    log.error(module.name + ':', 
-      'failed', 
-      results)
-  }
+  log.info(module.name + ':', results)
 }
