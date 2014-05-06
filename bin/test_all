@@ -70,14 +70,15 @@ cmdLn(function(_number, _concurrency){
             mdoc.testResults.version = version
             mdoc.browserify = results.install.passed && 
               results.browserify.passed;
+            /*
             upsert(modules, 'name', mdoc, function(err){
-              if (err) return next(err)
+              if (err) return next(err)*/
               modulesProcessed++
               concurrentModules--
               var mEndTime = +new Date
               log.info(module.name + ':', 'finished:', (mEndTime - mStartTime) + 'ms')
               next()
-            })
+            //})
           })
         })
       }, function(err){
