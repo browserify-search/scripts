@@ -61,7 +61,6 @@ cmdLn(function(_number, _concurrency){
             log.error(module.name + ':', err.message)
             return next(err)
           }
-          displayResults(module, results)
           findOne(modules, {name: module.name}, function(err, mdoc){
             if (err){
               log.error(module.name + ':', err.message)
