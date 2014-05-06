@@ -54,6 +54,7 @@ cmdLn(function(_number, _concurrency){
         concurrentModules++
         log.info(module.name + ':', 'started, concurrency:', 
           concurrentModules)
+        var mStartTime = +new Date
         testModule(module.name, dir, function(err, results){
           if (err){
             // this shouldn't happen
@@ -74,14 +75,16 @@ cmdLn(function(_number, _concurrency){
               if (err) return next(err)
               modulesProcessed++
               concurrentModules--
+              var mEndTime = +new Date
+              log.info(module.name + ':', 'finished:', (mEndTime - mStartTime) + 'ms')
               next()
             })
           })
         })
       }, function(err){
-        var endTime = +new Date
         if (err) console.error(err.message)
         log.info('ok')
+        var endTime = +new Date
         var duration = endTime - startTime
         log.info('Total time:', duration + 'ms')
         log.info('Time per module:', (duration / modulesProcessed) + 'ms')
