@@ -22,6 +22,6 @@
     "browser-resolve": "^1.2.4",
     "browserify": "^3.44.2",
     "rimraf": "^2.2.6",
-    "mongo_job": "0.0.0"
+    "mongo_job": "^0.0.1"
   }
 }
