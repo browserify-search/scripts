@@ -9,19 +9,20 @@
   "author": "Toby Ho",
   "license": "MIT",
   "dependencies": {
-    "is-type": "0.0.1",
-    "jsdom": "git://github.com/airportyh/jsdom",
-    "debug": "^0.8.0",
-    "mkdirp": "^0.4.0",
-    "mongodb": "^1.4.2",
-    "cmd-ln": "0.1.0",
-    "npm": "git://github.com/airportyh/npm",
-    "queue": "^2.2.0",
-    "npmlog": "0.0.6",
-    "module-deps": "^1.10.0",
     "browser-resolve": "^1.2.4",
     "browserify": "^3.44.2",
-    "rimraf": "^2.2.6",
-    "mongo_job": "^0.0.1"
+    "cmd-ln": "0.1.0",
+    "concat-stream": "^1.4.5",
+    "debug": "^0.8.0",
+    "is-type": "0.0.1",
+    "jsdom": "^0.10.5",
+    "mkdirp": "^0.4.0",
+    "module-deps": "^1.10.0",
+    "mongo_job": "^0.0.1",
+    "mongodb": "^1.4.2",
+    "npm": "git://github.com/airportyh/npm",
+    "npmlog": "0.0.6",
+    "queue": "^2.2.0",
+    "rimraf": "^2.2.6"
   }
 }
