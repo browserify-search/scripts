@@ -1,0 +1,111 @@
+#! /usr/bin/env node
+
+var coreModules = require('../lib/core_modules')
+var db = require('../lib/db')
+var clone = require('clone')
+var eachLimit = require('../lib/mongo/each_limit')
+var async = require('async')
+var flatten = require('lodash').flatten
+var log = require('npmlog')
+
+var booleanProperties = [
+  'hasTestling',
+  'hasBrowserKeyword',
+  'hasBrowserifyField',
+  'hasBrowserInDescription',
+  'hasBrowserInReadme',
+  "hasPluginInDescription",
+  "hasPluginInReadme",
+  "hasGruntInName",
+  "hasGruntInDescription",
+  "hasGruntInReadme",
+  "hasExpressInName",
+  "hasExpressInDescription",
+  "hasExpressInReadme"
+]
+var criteria = flatten(
+  coreModules
+    .map(function(module){
+      return [
+        {coreDeps: {$in: [module]}}, 
+        {coreDeps: {$nin: [module]}}
+      ]
+    })
+  .concat(
+    booleanProperties.map(function(prop){
+      var positive = {}
+      positive[prop] = true
+      var negative = {}
+      negative[prop] = false
+      return [positive, negative]
+    })
+  )
+)
+
+db(function(err, db){
+  if (err) return console.error(err.message)
+
+  getTotal(db, function(err, total){
+    if (err) return log.error(err.message)
+    else log.info('Total is', total)
+    getNumPasses(db, function(err, numPasses){
+      if (err) return log.error(err.message)
+      else log.info('Count is', numPasses)
+      var pbr = numPasses / total
+      log.info('Pbr is', pbr.toFixed(2))
+
+      async.eachLimit(criteria, 1, 
+        function(criterion, next){
+          getNumUsesAndPasses(criterion, db, function(err, numUsesAndPasses){
+            if (err) log.error(criterion, err.message)
+            //else log.info(module, 'Num uses and passes', '=', numUsesAndPasses)
+            getNumUses(criterion, db, function(err, numUses){
+              if (err) log.error(criterion, err.message)
+              //else log.info(module, 'Num uses', '=', numUses)  
+
+              var pba = numUsesAndPasses / numPasses
+              var pa = numPasses / total
+              var pb = numUses / total
+              var pab = pba * pa / pb
+              var pFactor = pba / pb
+
+              log.info('Given ' + JSON.stringify(criterion),  
+                'it has ' + pab.toFixed(3) + ' of being browserifiable', 'P(B|A):', pba.toFixed(3), 'P(B):', pb.toFixed(3), 
+                'pFactor', pFactor.toFixed(3))
+              next()
+            })
+          })
+        },
+        function(err){
+          if (err) console.error(err.message)
+          else console.log('ok')
+          db.close()
+        }
+      )
+    })
+  })
+
+})
+
+function getNumUsesAndPasses(criterion, db, callback){
+  criterion = clone(criterion)
+  criterion.passed = true
+  db.collection('test_summary').count(
+    criterion,
+    callback)
+}
+
+function getNumUses(criterion, db, callback){
+  db.collection('test_summary').count(
+    criterion,
+    callback)
+}
+
+function getTotal(db, callback){
+  db.collection('test_summary').count(callback)
+}
+
+function getNumPasses(db, callback){
+  db.collection('test_summary').count(
+    {passed: true}, callback)
+}

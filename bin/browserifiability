@@ -1,0 +1,134 @@
+#! /usr/bin/env node
+
+var cmdLn = require('cmd-ln')
+var db = require('../lib/db')
+var coreModules = require('../lib/core_modules')
+
+var criteria = [
+  prop('hasTestling'),
+  prop('hasBrowserKeyword'),
+  prop('hasBrowserifyField'),
+  prop('hasBrowserInDescription'),
+  prop('hasBrowserInReadme'),
+  prop('hasPluginInDescription'),
+  prop('hasPluginInReadme'),
+  prop('hasGruntInName'),
+  prop('hasGruntInDescription'),
+  prop('hasGruntInReadme'),
+  prop('hasExpressInName'),
+  prop('hasExpressInDescription'),
+  prop('hasExpressInReadme')
+].concat(
+  coreModules.map(function(module){
+    return hasCoreDep(module)
+  })
+)
+
+
+cmdLn(function(moduleName){
+
+  db(function(err, db){
+    var TestSummary = db.collection('test_summary')
+    var Modules = db.collection('modules')
+
+    Modules.findOne({name: moduleName}, function(err, module){
+      if (err) return finish()
+      TestSummary.find().toArray(function(err, testSummary){
+        if (err) return finish()
+        console.log(JSON.stringify(module, null, '  '))
+        console.log(browserifiability(module, testSummary))
+        finish()
+      })
+    })
+
+    function finish(){
+      db.close()
+    }
+
+  })
+
+})
+
+function browserifiability(module, testSummary){
+  if (!module.testResults.install.passed) return 0
+  if (!module.testResults.browserify.bundle.passed) return 0
+  if (!module.testResults.browserify.test.passed) return 0
+  var Pbr = baseP(testSummary)
+  var passed = testSummary.filter(prop('passed'))
+  var failed = testSummary.filter(not(prop('passed')))
+  var Pgood = Pbr
+  var Pbad = 1 - Pbr
+  for (var i = 0; i < criteria.length; i++){
+    console.log('p', Pgood / (Pgood + Pbad))
+    var criterion = criteria[i]
+    var pf
+    if (criterion(module)){
+      console.log('applying does', criterion.display)
+      Pgood *= passed.filter(criterion).length / passed.length
+      Pbad *= failed.filter(criterion).length / failed.length
+    }else{
+      console.log('applying not', criterion.display)
+      Pgood *= passed.filter(not(criterion)).length / passed.length
+      Pbad *= failed.filter(not(criterion)).length / failed.length
+    }
+  }
+  return Pgood / (Pgood + Pbad)
+}
+
+function baseP(summary){
+  return summary.filter(prop('passed')).length / 
+    summary.length
+}
+
+function pFactor(criterion, summary){
+  var total = summary.length
+  var numPasses = summary.filter(prop('passed')).length
+  var numUsesAndPasses = summary
+    .filter(and(prop('passed'), criterion)).length
+  var numUses = summary.filter(criterion).length
+  var prefix = criterion.display
+  console.log(prefix, 'total', total)
+  console.log(prefix, 'numPasses', numPasses)
+  console.log(prefix, 'numUsesAndPasses', numUsesAndPasses)
+  console.log(prefix, 'numUses', numUses)
+  var pba = numUsesAndPasses / numPasses
+  var pa = numPasses / total
+  var pb = numUses / total
+  var pab = pba * pa / pb
+  var pFactor = pba / pb
+  return pFactor
+}
+
+function prop(name){
+  var ret = function(obj){
+    return obj[name]
+  }
+  ret.display = name
+  return ret
+}
+
+function hasCoreDep(moduleName){
+  var ret = function(module){
+    if (module.coreDeps){
+      return module.coreDeps.indexOf(moduleName) !== -1
+    }else{
+      return module.testResults.coreDeps[moduleName]
+    }
+  }
+  ret.display = 'has core dep ' + moduleName
+  return ret
+}
+
+function and(fn1, fn2){
+  return function(obj){
+    return fn1(obj) && fn2(obj)
+  }
+}
+
+function not(fn){
+  var ret = function(){
+    return !fn.apply(null, arguments)
+  }
+  ret.display = 'not ' + fn.display
+  return ret
+}

@@ -1,0 +1,35 @@
+#! /usr/bin/env node
+
+var db = require('../lib/db')
+var eachLimit = require('../lib/mongo/each_limit')
+var fs = require('fs')
+var indent = require('indent')
+
+var count = 0
+var writeStream = fs.createWriteStream('data/modules.json')
+writeStream.write('[\n')
+db(function(err, db){
+  if (err) return console.error(err.message)
+
+  var modules = db.collection('modules')
+  modules.find().each(function(err, module){
+    if (err) return finish()
+    if (module == null) return finish()
+    delete module._id
+    if (count > 0){
+      writeStream.write('\n  ,\n')
+    }
+    writeStream.write(
+      indent(
+        JSON.stringify(module, null, '  ')
+      )
+    )
+    console.log('written', module.name, count++)
+  })
+
+  function finish(){
+    writeStream.end('\n]')
+    console.log('done')
+    db.close()
+  }
+})

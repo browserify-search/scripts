@@ -39,6 +39,8 @@ function dispatchModules(count, db, callback){
     ]
   }
 
+  criteria = {'testResults.install.passed': false}
+
   var cursor = modules
     .find(
       criteria,
