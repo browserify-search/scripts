@@ -5,9 +5,12 @@ var zmq = require('zmq')
 var _ = require('lodash')
 var push = zmq.socket('push')
 var assert = require('assert')
-push.bindSync('tcp://127.0.0.1:3000')
+var db = require('../lib/db')
+var eachLimit = require('../lib/mongo/each_limit')
+var ip = '192.241.206.168'
+push.bindSync('tcp://' + ip + ':3000')
 var pull = zmq.socket('pull')
-pull.bindSync('tcp://127.0.0.1:3001')
+pull.bindSync('tcp://' + ip + ':3001')
 
 var numWorkers = 0
 pull.on('message', function(msg, data){
@@ -16,15 +19,21 @@ pull.on('message', function(msg, data){
 
 var jobs = _.map(Array(9999), function(n, i){ return i })
 
-async.eachLimit(
-  jobs, 
-  10000,
-  function(n, next){
-    push.send(n + '.')
-    process.nextTick(next)
-  },
-  function(){
-    console.log('Sent all jobs')
-    process.exit()
-  }
-) 
+db(function(err, db){
+  if (err) return console.error(err.message)
+  var Modules = db.collection('modules')
+
+  var cursor = Modules.find(
+    {'testResults.browserify.test.passed': false}, 
+    {name: true})
+
+  eachLimit(cursor, 10000, 
+    function(doc, next){
+      push.send(n + '.')
+      setImmediate(next)
+    },
+    function(err){
+      if (err) console.error(err.message)
+      db.close()
+    })
+})

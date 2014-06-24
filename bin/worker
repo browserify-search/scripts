@@ -1,12 +1,22 @@
 #! /usr/bin/env node
 
 var zmq = require('zmq')
+var async = require('async')
 var pull = zmq.socket('pull')
 var push = zmq.socket('push')
 
-pull.connect('tcp://127.0.0.1:3000')
-push.connect('tcp://127.0.0.1:3001')
+pull.connect('tcp://192.241.206.168:3000')
+push.connect('tcp://192.241.206.168:3001')
+
+var q = async.queue(function(task, done){
+  console.log('working on', task)
+  setTimeout(function(){
+    console.log('done with', task)
+    done()
+  }, 1000)
+}, 4)
 
 pull.on('message', function(msg){
-  console.log('work: %s', msg.toString());
+  q.push(msg.toString())
+  //console.log('work: %s', msg.toString());
 });
