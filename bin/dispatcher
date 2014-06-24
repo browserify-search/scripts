@@ -33,6 +33,7 @@ cmdLn(function(numJobs){
         'testResults.coreDeps': null
       }, 
       {name: true})
+      .limit(numJobs)
 
     eachLimit(cursor, 10000, 
       function(doc, next){
