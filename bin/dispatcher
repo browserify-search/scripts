@@ -24,7 +24,10 @@ db(function(err, db){
   var Modules = db.collection('modules')
 
   var cursor = Modules.find(
-    {'testResults.browserify.test.passed': false}, 
+    {
+      'testResults.browserify.test.passed': false,
+      'testResults.coreDeps': null
+    }, 
     {name: true})
 
   eachLimit(cursor, 10000, 

@@ -2,21 +2,42 @@
 
 var zmq = require('zmq')
 var async = require('async')
+var db = require('../lib/db')
 var pull = zmq.socket('pull')
 var push = zmq.socket('push')
+var ip = '192.241.206.168'
+var testModule = require('../lib/test_module')
+var dir = '/tmp/browserify-search'
 
-pull.connect('tcp://192.241.206.168:3000')
-push.connect('tcp://192.241.206.168:3001')
+pull.connect('tcp://' + ip + ':3000')
+push.connect('tcp://' + ip + ':3001')
 
-var q = async.queue(function(task, done){
-  console.log('working on', task)
-  setTimeout(function(){
-    console.log('done with', task)
-    done()
-  }, 1000)
-}, 4)
+db(function(err, db){
+  if (err) return console.error(err.message)
+  var Modules = db.collection('modules')
 
-pull.on('message', function(msg){
-  q.push(msg.toString())
-  //console.log('work: %s', msg.toString());
-});
+  var q = async.queue(function(module, done){
+    console.log('testing', module)
+    testModule(module, dir, function(err, results){
+      if (err){
+        console.error(err.message)
+        done()
+        return
+      }
+      console.log('got results for', module, results)
+      Modules.update(
+        {name: module},
+        {$set: {testResults: results}},
+        function(err){
+          if (err) console.error(err.message)
+          done()
+        })
+    })
+  }, 4)
+
+  pull.on('message', function(msg){
+    q.push(msg.toString())
+    //console.log('work: %s', msg.toString());
+  });
+
+})
