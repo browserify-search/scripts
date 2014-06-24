@@ -23,7 +23,7 @@ cmdLn(function(numJobs){
   assert(!isNaN(numJobs))
   numJobs = Number(numJobs)
 
-  db(function(err, db){
+  db(function(err, db){    
     if (err) return console.error(err.message)
     var Modules = db.collection('modules')
 
@@ -35,13 +35,18 @@ cmdLn(function(numJobs){
       {name: true})
       .limit(numJobs)
 
-    eachLimit(cursor, 10000, 
+    eachLimit(
+      cursor, 
+      10000, 
       function(doc, next){
         push.send(doc.name)
         setImmediate(next)
       },
       function(err){
         if (err) console.error(err.message)
+        db.on('close', function(){
+          process.exit()
+        })
         db.close()
       })
   })
