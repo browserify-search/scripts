@@ -29,7 +29,7 @@ db(function(err, db){
 
   eachLimit(cursor, 10000, 
     function(doc, next){
-      push.send(n + '.')
+      push.send(doc.name)
       setImmediate(next)
     },
     function(err){
