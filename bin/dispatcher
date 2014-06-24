@@ -1,0 +1,30 @@
+#! /usr/bin/env node
+
+var async = require('async')
+var zmq = require('zmq')
+var _ = require('lodash')
+var push = zmq.socket('push')
+var assert = require('assert')
+push.bindSync('tcp://127.0.0.1:3000')
+var pull = zmq.socket('pull')
+pull.bindSync('tcp://127.0.0.1:3001')
+
+var numWorkers = 0
+pull.on('message', function(msg, data){
+  console.log('# of workers connected', ++numWorkers)
+})
+
+var jobs = _.map(Array(9999), function(n, i){ return i })
+
+async.eachLimit(
+  jobs, 
+  10000,
+  function(n, next){
+    push.send(n + '.')
+    process.nextTick(next)
+  },
+  function(){
+    console.log('Sent all jobs')
+    process.exit()
+  }
+) 

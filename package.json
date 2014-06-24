@@ -11,11 +11,15 @@
   "dependencies": {
     "browser-resolve": "^1.2.4",
     "browserify": "^3.44.2",
+    "clone": "^0.1.16",
     "cmd-ln": "~0.1.0",
     "concat-stream": "^1.4.5",
+    "csv-parse": "0.0.4",
     "debug": "^0.8.0",
+    "indent": "0.0.1",
     "is-type": "0.0.1",
     "jsdom": "^0.10.5",
+    "lodash": "^2.4.1",
     "mkdirp": "^0.4.0",
     "module-deps": "^1.10.0",
     "mongo_job": "~0.0.1",
@@ -23,6 +27,7 @@
     "npm": "git://github.com/airportyh/npm",
     "npmlog": "0.0.6",
     "queue": "^2.2.0",
-    "rimraf": "^2.2.6"
+    "rimraf": "^2.2.6",
+    "zmq": "^2.7.0"
   }
 }

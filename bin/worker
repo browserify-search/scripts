@@ -1,0 +1,12 @@
+#! /usr/bin/env node
+
+var zmq = require('zmq')
+var pull = zmq.socket('pull')
+var push = zmq.socket('push')
+
+pull.connect('tcp://127.0.0.1:3000')
+push.connect('tcp://127.0.0.1:3001')
+
+pull.on('message', function(msg){
+  console.log('work: %s', msg.toString());
+});
