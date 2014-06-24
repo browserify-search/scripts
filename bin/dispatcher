@@ -2,6 +2,7 @@
 
 var async = require('async')
 var zmq = require('zmq')
+var cmdLn = require('cmd-ln')
 var _ = require('lodash')
 var push = zmq.socket('push')
 var assert = require('assert')
@@ -17,26 +18,31 @@ pull.on('message', function(msg, data){
   console.log('# of workers connected', ++numWorkers)
 })
 
-var jobs = _.map(Array(9999), function(n, i){ return i })
+cmdLn(function(numJobs){
 
-db(function(err, db){
-  if (err) return console.error(err.message)
-  var Modules = db.collection('modules')
+  assert(!isNaN(numJobs))
+  numJobs = Number(numJobs)
 
-  var cursor = Modules.find(
-    {
-      'testResults.browserify.test.passed': false,
-      'testResults.coreDeps': null
-    }, 
-    {name: true})
+  db(function(err, db){
+    if (err) return console.error(err.message)
+    var Modules = db.collection('modules')
 
-  eachLimit(cursor, 10000, 
-    function(doc, next){
-      push.send(doc.name)
-      setImmediate(next)
-    },
-    function(err){
-      if (err) console.error(err.message)
-      db.close()
-    })
+    var cursor = Modules.find(
+      {
+        'testResults.browserify.test.passed': false,
+        'testResults.coreDeps': null
+      }, 
+      {name: true})
+
+    eachLimit(cursor, 10000, 
+      function(doc, next){
+        push.send(doc.name)
+        setImmediate(next)
+      },
+      function(err){
+        if (err) console.error(err.message)
+        db.close()
+      })
+  })
+
 })
