@@ -45,10 +45,12 @@ db(function(err, db){
               command: 'import',
               module: module
             }))
+            /*
             push.send(JSON.stringify({
               command: 'test',
               module: module
             }))
+*/
             setImmediate(next)
           },
           function(err){
