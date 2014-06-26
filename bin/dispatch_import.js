@@ -4,12 +4,26 @@ var cmdLn = require('cmd-ln')
 var zmq = require('zmq')
 var push = zmq.socket('push')
 var assert = require('assert')
-var ip = '199.116.112.230'
+var ip = '192.241.206.168'
 push.bindSync('tcp://' + ip + ':3000')
+var db = require('../lib/db')
+var eachLimit = require('../lib/mongo/each_limit')
 
-cmdLn(function(moduleName){
-  push.send(JSON.stringify({command: 'import', module: moduleName}))
-  setTimeout(function(){
-    process.exit()
-  }, 1000)
+db(function(err, db){
+  if (err) return console.error(err.message)
+
+  var Modules = db.collection('modules2')
+  eachLimit(
+    Modules.find({}, {name: true}),
+    10000,
+    function(doc, next){
+      var module = doc.name
+      push.send(JSON.stringify({command: 'import', module: module}))
+      setImmediate(next)
+    },
+    function(err){
+      if (err) console.error(err.message)
+      db.close()
+    }
+  )
 })
