@@ -4,7 +4,8 @@ var cmdLn = require('cmd-ln')
 var zmq = require('zmq')
 var push = zmq.socket('push')
 var assert = require('assert')
-var ip = '192.241.206.168'
+var ip = os.networkInterfaces().eth0[0].address
+console.log('binding to', ip)
 push.bindSync('tcp://' + ip + ':3000')
 var db = require('../lib/db')
 var eachLimit = require('../lib/mongo/each_limit')
