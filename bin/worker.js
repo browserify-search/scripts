@@ -15,7 +15,6 @@ var easyFeatures = require('../lib/npm/easy_features')
 pull.connect('tcp://' + ip + ':3000')
 push.connect('tcp://' + ip + ':3001')
 
-
 db(function(err, db){
   if (err) return console.error(err.message)
   var Modules = db.collection('modules2')
