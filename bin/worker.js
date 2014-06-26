@@ -9,45 +9,74 @@ var ip = '199.116.112.230'
 var testModule = require('../lib/test_module')
 var dir = '/tmp/browserify-search'
 var getModuleInfo = require('../lib/npm/get_module_info')
-var basicInfo = require('../lib/npm/basic_info')
+var searchInfo = require('../lib/npm/search_info')
+var easyFeatures = require('../lib/npm/easy_features')
+
 pull.connect('tcp://' + ip + ':3000')
 push.connect('tcp://' + ip + ':3001')
 
+
 db(function(err, db){
   if (err) return console.error(err.message)
-  var Modules = db.collection('modules')
+  var Modules = db.collection('modules2')
 
   var q = async.queue(function(job, done){
-    console.log('got job', job)
     var cmd = job.command
     var module = job.module
     if (cmd === 'import'){
-      getModuleInfo(module, function(err, info){
-        console.log(module, info)
-        done()
-      })
+      importModule(module, done)
     }else if (cmd === 'test'){
-      testModule(module, dir, function(err, results){
-        if (err){
-          console.error(err.message)
-          done()
-          return
-        }
-        console.log('got results for', module, results)
-        Modules.update(
-          {name: module},
-          {$set: {testResults: results}},
-          function(err){
-            if (err) console.error(err.message)
-            done()
-          })
-      })
+      testTheModule(module, done)
     }
   }, 4)
 
   pull.on('message', function(msg){
     q.push(JSON.parse(msg.toString()))
-    //console.log('work: %s', msg.toString());
   });
 
+  function importModule(module, done){
+    getModuleInfo(module, function(err, info){
+      if (err){
+        console.warn(module, err.message)
+        return done()
+      }
+      var search = searchInfo(info)
+      var features = easyFeatures(info)
+      Modules.update(
+        {name: module},
+        {$set: {
+          version: info['dist-tags'].latest,
+          search: search, 
+          features: features}},
+        {upsert: true},
+        function(err){
+          if (err) console.warn(err.message)
+          console.log(module, 'imported')
+          done()
+        }
+      )
+    })
+  }
+
+  function testTheModule(module, done){
+    testModule(module, dir, function(err, results){
+      if (err){
+        console.error(module, err.message)
+        done()
+        return
+      }
+      Modules.update(
+        {name: module},
+        {$set: {testResults: results}},
+        {upsert: true},
+        function(err){
+          if (err) console.error(err.message)
+          console.log(module, 'tested')
+          done()
+        }
+      )
+    })
+  }
+
 })
+

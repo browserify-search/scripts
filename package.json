@@ -25,6 +25,7 @@
     "module-deps": "^1.10.0",
     "mongo_job": "~0.0.1",
     "mongodb": "^1.4.2",
+    "natural": "^0.1.27",
     "npm": "git://github.com/airportyh/npm",
     "npmlog": "0.0.6",
     "queue": "^2.2.0",
