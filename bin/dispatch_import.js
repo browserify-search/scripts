@@ -4,7 +4,7 @@ var cmdLn = require('cmd-ln')
 var zmq = require('zmq')
 var push = zmq.socket('push')
 var assert = require('assert')
-var ip = 'forum.atlantajavascript.com'
+var ip = '199.116.112.230'
 push.bindSync('tcp://' + ip + ':3000')
 
 cmdLn(function(moduleName){

@@ -5,7 +5,7 @@ var async = require('async')
 var db = require('../lib/db')
 var pull = zmq.socket('pull')
 var push = zmq.socket('push')
-var ip = 'forum.atlantajavascript.com'
+var ip = '199.116.112.230'
 var testModule = require('../lib/test_module')
 var dir = '/tmp/browserify-search'
 
