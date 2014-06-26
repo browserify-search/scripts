@@ -39,7 +39,7 @@ db(function(err, db){
   }, 4)
 
   pull.on('message', function(msg){
-    q.push(msg.toString())
+    q.push(JSON.parse(msg.toString()))
     //console.log('work: %s', msg.toString());
   });
 

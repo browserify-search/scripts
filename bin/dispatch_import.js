@@ -8,5 +8,5 @@ var ip = '199.116.112.230'
 push.bindSync('tcp://' + ip + ':3000')
 
 cmdLn(function(moduleName){
-  push.send({command: 'import', module: moduleName})
+  push.send(JSON.stringify({command: 'import', module: moduleName}))
 })
