@@ -5,7 +5,7 @@ var async = require('async')
 var db = require('../lib/db')
 var pull = zmq.socket('pull')
 var push = zmq.socket('push')
-var ip = '192.241.206.168'
+var ip = 'forum.atlantajavascript.com'
 var testModule = require('../lib/test_module')
 var dir = '/tmp/browserify-search'
 
@@ -17,7 +17,8 @@ db(function(err, db){
   var Modules = db.collection('modules')
 
   var q = async.queue(function(module, done){
-    console.log('testing', module)
+    console.log('got job', module)
+    /*
     testModule(module, dir, function(err, results){
       if (err){
         console.error(err.message)
@@ -33,6 +34,8 @@ db(function(err, db){
           done()
         })
     })
+    */
+    setTimeout(done, 1000)
   }, 4)
 
   pull.on('message', function(msg){
