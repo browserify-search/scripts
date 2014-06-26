@@ -35,17 +35,17 @@ db(function(err, db){
   });
 
   function importModule(module, done){
-    var start = new Date+
+    var start = +new Date
     getModuleInfo(module, function(err, info){
       if (err){
         console.warn(module, err.message)
         return done()
       }
-      var end = new Date+
+      var end = +new Date
       console.log(module, 'api call took', end - start, 'ms')
       var search = searchInfo(info)
       var features = easyFeatures(info)
-      start = new Date+
+      start = +new Date
       Modules.update(
         {name: module},
         {$set: {
@@ -55,7 +55,7 @@ db(function(err, db){
         {upsert: true},
         function(err){
           if (err) console.warn(err.message)
-          end = new Date+
+          end = +new Date
           console.log(module, 'imported took', (end - start), 'ms')
           done()
         }
@@ -70,13 +70,13 @@ db(function(err, db){
         done()
         return
       }
-      var start = new Date+
+      var start = +new Date
       Modules.update(
         {name: module},
         {$set: {testResults: results}},
         {upsert: true},
         function(err){
-          var end = new Date+
+          var end = +new Date
           if (err) console.error(err.message)
           console.log(module, 'tested, saved in', (end - start), 'ms')
           done()
