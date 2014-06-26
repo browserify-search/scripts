@@ -9,4 +9,7 @@ push.bindSync('tcp://' + ip + ':3000')
 
 cmdLn(function(moduleName){
   push.send(JSON.stringify({command: 'import', module: moduleName}))
+  setTimeout(function(){
+    process.exit()
+  }, 1000)
 })
