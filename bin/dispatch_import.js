@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 
 var cmdLn = require('cmd-ln')
+var zmq = require('zmq')
 var push = zmq.socket('push')
 var assert = require('assert')
 var ip = 'forum.atlantajavascript.com'
