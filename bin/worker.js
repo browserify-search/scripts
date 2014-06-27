@@ -71,10 +71,8 @@ db(function(err, db){
         return
       }
       var start = +new Date
-      Modules.update(
-        {name: module},
-        {$set: {testResults: results}},
-        {upsert: true},
+      Modules.insert(
+        {name: module, testResults: results},
         function(err){
           var end = +new Date
           if (err) console.error(err.message)
