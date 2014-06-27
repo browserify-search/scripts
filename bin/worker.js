@@ -76,7 +76,7 @@ db(function(err, db){
         function(err){
           var end = +new Date
           if (err) console.error(err.message)
-          console.log(module, 'tested, saved in', (end - start), 'ms')
+          console.log(module, 'tested, insert in', (end - start), 'ms')
           done()
         }
       )
