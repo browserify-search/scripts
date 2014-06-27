@@ -42,16 +42,15 @@ db(function(err, db){
           100, 
           function(module, next){
             
-            push.send(JSON.stringify({
+            /*push.send(JSON.stringify({
               command: 'import',
               module: module
-            }))
+            }))*/
             
-            /*
             push.send(JSON.stringify({
               command: 'test',
               module: module
-            }))*/
+            }))
 
             setImmediate(next)
           },
