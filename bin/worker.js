@@ -27,6 +27,8 @@ db(function(err, db){
       importModule(module, done)
     }else if (cmd === 'test'){
       testTheModule(module, done)
+    }else{
+      done()
     }
   }, 4)
 
