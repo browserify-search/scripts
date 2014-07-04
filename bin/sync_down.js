@@ -7,14 +7,25 @@ var os = require('os')
 var db = require('../lib/db')
 var url = 'http://forum.atlantajavascript.com:5984/npm/_changes'
 var push = zmq.socket('push')
+var pull = zmq.socket('pull')
 var ip = os.networkInterfaces().eth0[0].address
 console.log('binding to', ip)
+pull.bindSync('tcp://' + ip + ':3000')
 push.bindSync('tcp://' + ip + ':3000')
 
 var since = 0
+var results = []
 
 db(function(err, db){
   if (err) return console.error(err.message)
+
+  setInterval(function(){
+    console.log('Got', results.length, 'results')
+  }, 2000)
+
+  pull.on('message', function(result){
+    results.push(JSON.parse(result))
+  })
 
   var LastSeq = db.collection('last_seq')
   LastSeq.findOne({_id: 1}, function(err, lastSeqDoc){
@@ -61,11 +72,8 @@ db(function(err, db){
               {$set: {last_seq: lastSeq}}, 
               {upsert: true},
               function(err){
-                if (err) console.error(err.message)
-                db.on('close', function(){
-                  process.exit()
-                })
-                db.close()
+                console.log('All jobs sent.')
+                
               }
             )
           }

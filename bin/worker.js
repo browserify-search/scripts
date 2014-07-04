@@ -66,31 +66,26 @@ db(function(err, db){
   }
 
   function testTheModule(module, done){
-    var callCount = 0
     testModule(module, dir, function(err, results){
-      if (callCount > 0){
-        throw new Error('TOBY: called more than once! for ' + module)
-      }
-      callCount++
       if (err){
         console.error(module, err.message)
         done()
         return
       }
       var start = +new Date
-      var onInsertCalled = false
       function onInsert(err){
-        if (onInsertCalled) return
-        onInsertCalled = true
         var end = +new Date
         if (err) console.error(err.message)
         console.log(module, 'tested, insert in', (end - start), 'ms')
         done()
       }
+      push.send(
+        JSON.stringify({name: module, testResults: results}))
+      /*
       Modules.insert(
         {name: module, testResults: results},
         onInsert
-      )
+      )*/
     })
   }
 
