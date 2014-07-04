@@ -30,7 +30,7 @@ db(function(err, db){
     }else{
       done()
     }
-  }, 4)
+  }, 1)
 
   pull.on('message', function(msg){
     q.push(JSON.parse(msg.toString()))
@@ -73,14 +73,18 @@ db(function(err, db){
         return
       }
       var start = +new Date
+      var onInsertCalled = false
+      function onInsert(err){
+        if (onInsertCalled) return
+        onInsertCalled = true
+        var end = +new Date
+        if (err) console.error(err.message)
+        console.log(module, 'tested, insert in', (end - start), 'ms')
+        done()
+      }
       Modules.insert(
         {name: module, testResults: results},
-        function(err){
-          var end = +new Date
-          if (err) console.error(err.message)
-          console.log(module, 'tested, insert in', (end - start), 'ms')
-          done()
-        }
+        inserted
       )
     })
   }
