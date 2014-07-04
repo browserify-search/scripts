@@ -30,7 +30,7 @@ db(function(err, db){
     }else{
       done()
     }
-  }, 1)
+  }, 2)
 
   pull.on('message', function(msg){
     q.push(JSON.parse(msg.toString()))
