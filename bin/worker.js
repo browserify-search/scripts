@@ -84,7 +84,7 @@ db(function(err, db){
       }
       Modules.insert(
         {name: module, testResults: results},
-        inserted
+        onInsert
       )
     })
   }
