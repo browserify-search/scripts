@@ -69,7 +69,7 @@ db(function(err, db){
     var callCount = 0
     testModule(module, dir, function(err, results){
       if (callCount > 0){
-        throw new Error('TOBY: called more than once!')
+        throw new Error('TOBY: called more than once! for ' + module)
       }
       callCount++
       if (err){
