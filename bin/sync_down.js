@@ -10,7 +10,7 @@ var push = zmq.socket('push')
 var pull = zmq.socket('pull')
 var ip = os.networkInterfaces().eth0[0].address
 console.log('binding to', ip)
-pull.bindSync('tcp://' + ip + ':3000')
+pull.bindSync('tcp://' + ip + ':3001')
 push.bindSync('tcp://' + ip + ':3000')
 
 var since = 0
