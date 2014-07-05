@@ -19,12 +19,9 @@ var results = []
 db(function(err, db){
   if (err) return console.error(err.message)
 
-  setInterval(function(){
-    console.log('Got', results.length, 'results')
-  }, 2000)
-
   pull.on('message', function(result){
     results.push(JSON.parse(result))
+    console.log('Got message', result, '# messages', results.length)
   })
 
   var LastSeq = db.collection('last_seq')
