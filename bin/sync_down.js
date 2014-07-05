@@ -33,8 +33,8 @@ db(function(err, db){
     var start = +new Date
     batch.execute(function(err){
       var end = +new Date
-      console.log('Insert batch of', results.length, 
-        'results took', (end - start) + 'ms')
+      //console.log('Insert batch of', results.length, 
+      //  'results took', (end - start) + 'ms')
       totalModulesSaved += results.length
       done(err)
     })
