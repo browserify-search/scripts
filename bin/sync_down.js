@@ -15,17 +15,17 @@ push.bindSync('tcp://' + ip + ':3000')
 
 var since = 0
 var totalModulesProcessed = 0
-
+var totalModulesSaved = 0
 db(function(err, db){
   if (err) return console.error(err.message)
 
   setInterval(function(){
-    console.log('Modules processed so far', totalModulesProcessed)
+    console.log('Modules processed', totalModulesProcessed,
+      'modules saved', totalModulesSaved)
   }, 10000)
 
   var Modules = db.collection('modules2')
   var q = async.cargo(function(results, done){
-    
     var batch = Modules.initializeUnorderedBulkOp()
     for (var i = 0; i < results.length; i++){
       batch.insert(results[i])
@@ -35,6 +35,7 @@ db(function(err, db){
       var end = +new Date
       console.log('Insert batch of', results.length, 
         'results took', (end - start) + 'ms')
+      totalModulesSaved += results.length
       done(err)
     })
   })
