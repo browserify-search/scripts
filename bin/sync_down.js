@@ -27,7 +27,9 @@ db(function(err, db){
   var q = async.cargo(function(results, done){
     totalModulesProcessed += results.length
     var batch = Modules.initializeUnorderedBulkOp()
-    batch.insert(result)
+    for (var i = 0; i < results.length; i++){
+      batch.insert(result[i])
+    }
     var start = +new Date
     batch.execute(function(err){
       var end = +new Date
