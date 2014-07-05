@@ -25,7 +25,7 @@ db(function(err, db){
 
   var Modules = db.collection('modules2')
   var q = async.cargo(function(results, done){
-    totalModulesProcessed += results.length
+    
     var batch = Modules.initializeUnorderedBulkOp()
     for (var i = 0; i < results.length; i++){
       batch.insert(results[i])
@@ -40,6 +40,7 @@ db(function(err, db){
   })
 
   pull.on('message', function(result){
+    totalModulesProcessed++
     result = JSON.parse('' + result)
     q.push(result)
   })
