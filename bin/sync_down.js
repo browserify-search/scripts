@@ -28,7 +28,7 @@ db(function(err, db){
     totalModulesProcessed += results.length
     var batch = Modules.initializeUnorderedBulkOp()
     for (var i = 0; i < results.length; i++){
-      batch.insert(result[i])
+      batch.insert(results[i])
     }
     var start = +new Date
     batch.execute(function(err){
