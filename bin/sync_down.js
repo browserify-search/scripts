@@ -20,7 +20,8 @@ db(function(err, db){
   if (err) return console.error(err.message)
 
   pull.on('message', function(result){
-    results.push(JSON.parse(result))
+    result = JSON.parse('' + result)
+    results.push(result)
     console.log('Got message', result, '# messages', results.length)
   })
 

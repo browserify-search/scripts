@@ -81,6 +81,7 @@ db(function(err, db){
       }
       push.send(
         JSON.stringify({name: module, testResults: results}))
+      done()
       /*
       Modules.insert(
         {name: module, testResults: results},
