@@ -72,21 +72,9 @@ db(function(err, db){
         done()
         return
       }
-      var start = +new Date
-      function onInsert(err){
-        var end = +new Date
-        if (err) console.error(err.message)
-        console.log(module, 'tested, insert in', (end - start), 'ms')
-        done()
-      }
       push.send(
         JSON.stringify({name: module, testResults: results}))
       done()
-      /*
-      Modules.insert(
-        {name: module, testResults: results},
-        onInsert
-      )*/
     })
   }
 

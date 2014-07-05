@@ -14,15 +14,32 @@ pull.bindSync('tcp://' + ip + ':3001')
 push.bindSync('tcp://' + ip + ':3000')
 
 var since = 0
-var results = []
+var totalModulesProcessed = 0
 
 db(function(err, db){
   if (err) return console.error(err.message)
 
+  setInterval(function(){
+    console.log('Modules processed so far', totalModulesProcessed)
+  }, 10000)
+
+  var Modules = db.collection('modules2')
+  var q = async.cargo(function(results, done){
+    totalModulesProcessed += results.length
+    var batch = Modules.initializeUnorderedBulkOp()
+    batch.insert(result)
+    var start = +new Date
+    batch.execute(function(err){
+      var end = +new Date
+      console.log('Insert batch of', results.length, 
+        'results took', (end - start) + 'ms')
+      done(err)
+    })
+  })
+
   pull.on('message', function(result){
     result = JSON.parse('' + result)
-    results.push(result)
-    console.log('Got message', result, '# messages', results.length)
+    q.push(result)
   })
 
   var LastSeq = db.collection('last_seq')
