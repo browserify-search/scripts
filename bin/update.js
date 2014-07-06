@@ -8,6 +8,7 @@ var searchInfo = require('../lib/npm/search_info')
 var easyFeatures = require('../lib/npm/easy_features')
 var zmq = require('zmq')
 var async = require('async')
+var log = require('debug')('update')
 var url = 'http://forum.atlantajavascript.com:5984/npm/_changes'
 var ip = os.networkInterfaces().eth0[0].address
 var push = zmq.socket('push')
@@ -31,18 +32,16 @@ db(function(err, db){
           }
         })
     }
-    var start = + new Date
+    log('saving batch of', results.length)
     batch.execute(function(err){
-      var end = + new Date
-      var duration = end - start
-      console.log('Batch update', results.length,
-        'documents took', duration + 'ms')
+      log('saved batch of', results.length)
       done()
     })
   })
 
   pull.on('message', function(msg){
     var result = JSON.parse('' + msg)
+    log(msg.name, 'got result')
     q.push(result)
   })
 
@@ -64,14 +63,16 @@ db(function(err, db){
               search: search,
               features: features
             }
+            log(name, 'saving info')
             Modules.update(
               {_id: info.name, version: {$ne: version}},
               {$set: fields},
               {upsert: true},
               function(err, numModified){
                 if (err){
-                  console.error(err.message)
+                  log(name, err.message)
                 }
+                log(name, 'saved')
                 if (numModified > 0){
                   push.send(JSON.stringify({
                     command: 'test',
@@ -85,8 +86,11 @@ db(function(err, db){
         }
       })
 
+
     jsonStream.on('root', function(root){
       var lastSeq = root.last_seq
+      console.log('Got last seq:', lastSeq)
+      /*
       LastSeq.update(
         {_id: 1}, 
         {$set: {last_seq: lastSeq}}, 
@@ -95,7 +99,7 @@ db(function(err, db){
           if (err) console.error(err.message)
           else console.log('Updated last seq')
         }
-      )
+      )*/
     })
   })
 })
