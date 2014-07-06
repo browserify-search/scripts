@@ -25,7 +25,7 @@ db(function(err, db){
     var batch = Modules.initializeUnorderedBulkOp()
     for (var i = 0; i < results.length; i++){
       var result = results[i]
-      batch.find({_id: result.name, result.version})
+      batch.find({_id: result.name, version: result.version})
         .updateOne({
           $set: {
             testResults: result.testResults
