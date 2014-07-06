@@ -23,10 +23,8 @@ db(function(err, db){
   var q = async.queue(function(job, done){
     var cmd = job.command
     var module = job.module
-    if (cmd === 'import'){
-      importModule(module, done)
-    }else if (cmd === 'test'){
-      testTheModule(module, done)
+    if (cmd === 'test'){
+      testTheModule(module, job.version, done)
     }else{
       done()
     }
@@ -34,38 +32,9 @@ db(function(err, db){
 
   pull.on('message', function(msg){
     q.push(JSON.parse(msg.toString()))
-  });
+  })
 
-  function importModule(module, done){
-    var start = +new Date
-    getModuleInfo(module, function(err, info){
-      if (err){
-        console.warn(module, err.message)
-        return done()
-      }
-      var end = +new Date
-      console.log(module, 'api call took', end - start, 'ms')
-      var search = searchInfo(info)
-      var features = easyFeatures(info)
-      start = +new Date
-      Modules.update(
-        {name: module},
-        {$set: {
-          version: info['dist-tags'].latest,
-          search: search, 
-          features: features}},
-        {upsert: true},
-        function(err){
-          if (err) console.warn(err.message)
-          end = +new Date
-          console.log(module, 'imported took', (end - start), 'ms')
-          done()
-        }
-      )
-    })
-  }
-
-  function testTheModule(module, done){
+  function testTheModule(module, version, done){
     testModule(module, dir, function(err, results){
       if (err){
         console.error(module, err.message)
@@ -73,7 +42,12 @@ db(function(err, db){
         return
       }
       push.send(
-        JSON.stringify({name: module, testResults: results}))
+        JSON.stringify({
+          name: module, 
+          version: version,
+          testResults: results
+        })
+      )
       done()
     })
   }
