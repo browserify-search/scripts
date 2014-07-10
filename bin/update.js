@@ -48,7 +48,7 @@ db(function(err, db){
   pull.on('message', function(msg){
     var result = JSON.parse('' + msg)
     log(msg.name, 'got result')
-    delete pending[name]
+    delete pending[msg.name]
     q.push(result)
   })
 
@@ -57,7 +57,7 @@ db(function(err, db){
 
     log('last seq:', lastSeq)
     var jsonStream = JSONStream.parse('results.*.doc')
-    var req = request(url + '?since=' + lastSeq)
+    var req = request(url + '?since=' + lastSeq + '&include_docs=true')
     req.pipe(jsonStream)
       .pipe(es.mapSync(function(info){
         if (info._id.substring(0, 8) !== '_design/'){
@@ -67,7 +67,7 @@ db(function(err, db){
             var version = info.version
             var name = info.name
             var fields = {
-              version: version,
+              version: info['dist-tags'].latest,
               search: search,
               features: features
             }
