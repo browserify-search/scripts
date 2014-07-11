@@ -15,6 +15,7 @@ var push = zmq.socket('push')
 push.bindSync('tcp://' + ip + ':3000')
 var pull = zmq.socket('pull')
 pull.bindSync('tcp://' + ip + ':3001')
+var pending = {}
 
 db(function(err, db){
   if (err) return console.error(err.message)
@@ -35,6 +36,10 @@ db(function(err, db){
     log('saving batch of', results.length)
     batch.execute(function(err){
       log('saved batch of', results.length)
+      var pendingArr = Object.keys(pending)
+      if (pendingArr.length > 0){
+        log(pendingArr.length, 'pending')
+      }
       done()
     })
   })
@@ -42,6 +47,7 @@ db(function(err, db){
   pull.on('message', function(msg){
     var result = JSON.parse('' + msg)
     log(msg.name, 'got result')
+    delete pending[name]
     q.push(result)
   })
 
@@ -74,6 +80,7 @@ db(function(err, db){
                 }
                 log(name, 'saved')
                 if (numModified > 0){
+                  pending[name] = true
                   push.send(JSON.stringify({
                     command: 'test',
                     module: name,
@@ -84,7 +91,7 @@ db(function(err, db){
             )
           }
         }
-      })
+      }))
 
 
     jsonStream.on('root', function(root){
