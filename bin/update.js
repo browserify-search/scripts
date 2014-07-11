@@ -55,6 +55,7 @@ db(function(err, db){
   LastSeq.findOne({_id: 1}, function(err, lastSeqDoc){
     var lastSeq = lastSeqDoc.last_seq
 
+    log('last seq:', lastSeq)
     var jsonStream = JSONStream.parse('results.*.doc')
     var req = request(url + '?since=' + lastSeq)
     req.pipe(jsonStream)
