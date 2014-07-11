@@ -10,6 +10,7 @@ var zmq = require('zmq')
 var async = require('async')
 var log = require('debug')('update')
 var url = 'http://forum.atlantajavascript.com:5984/npm/_changes'
+var os = require('os')
 var ip = os.networkInterfaces().eth0[0].address
 var push = zmq.socket('push')
 push.bindSync('tcp://' + ip + ':3000')
