@@ -8,35 +8,46 @@ var db = require('../lib/db')
 var url = 'http://forum.atlantajavascript.com:5984/npm/_changes'
 var push = zmq.socket('push')
 var pull = zmq.socket('pull')
+var _ = require('lodash')
 var ip = os.networkInterfaces().eth0[0].address
+var replify = require('replify')
 console.log('binding to', ip)
 pull.bindSync('tcp://' + ip + ':3001')
 push.bindSync('tcp://' + ip + ':3000')
 
-var since = 0
-var lastTotalModulesProcessed = 0
-var totalModulesProcessed = 0
-var totalModulesSaved = 0
-var pendingModules = {}
+var app = {
+  lastModulesProcessed: -1,
+  pendingModules: {},
+  processedModules: {},
+  savedModules: {}
+}
+
+replify('sync_down', app)
 
 db(function(err, db){
   if (err) return console.error(err.message)
 
   function startMonitoring(){
     setInterval(function(){
-      console.log('Modules processed', totalModulesProcessed,
-        'modules saved', totalModulesSaved, 
-        'pending modules', Object.keys(pendingModules).length)
-      if (totalModulesProcessed == lastTotalModulesProcessed){
+      var modulesProcessed = Object.keys(app.processedModules).length
+      var modulesPending = Object.keys(app.pendingModules).length
+      console.log(
+        'Modules processed', 
+        modulesProcessed
+        'Saved Modules',
+        Object.keys(app.savedModules).length,
+        'Pending modules', 
+        modulesPending)
+      if (modulesProcessed == app.lastModulesProcessed){
         // seems all workers are idle
-        if (Object.keys(pendingModules).length === 0){
+        if (modulesPending === 0){
           console.log('All modules have been processed')
           process.exit()
         }else{
-          retry(Object.keys(pendingModules))
+          retry(Object.keys(app.pendingModules))
         }
       }
-      lastTotalModulesProcessed = totalModulesProcessed
+      app.lastModulesProcessed = modulesProcessed
     }, 10000)
   }
 
@@ -47,26 +58,35 @@ db(function(err, db){
     }
   }
 
-  var Modules = db.collection('modules2')
+  var Modules = db.collection('modules')
   var q = async.cargo(function(results, done){
     var batch = Modules.initializeUnorderedBulkOp()
     for (var i = 0; i < results.length; i++){
       var result = results[i]
+      app.savedModules[result._id] = true
       batch.find({_id: result._id}).upsert()
         .updateOne(result)
     }
     var start = +new Date
     batch.execute(function(err){
       var end = +new Date
-      totalModulesSaved += results.length
+      for (var i = 0; i < results.length; i++){
+        var result = results[i]
+        app.savedModules[result._id] = true
+      }
       done(err)
     })
   })
 
   pull.on('message', function(result){
-    totalModulesProcessed++
     result = JSON.parse('' + result)
-    delete pendingModules[result._id]
+    var module = results._id
+    if (app.processedModules[module]){
+      console.warn(module, 'was processed a second time') 
+    }else{
+      app.processedModules[results._id] = true
+      delete app.pendingModules[result._id]
+    }
     q.push(result)
   })
 
@@ -83,18 +103,18 @@ db(function(err, db){
         var lastSeq = changes.last_seq
         console.log('last seq', lastSeq)
         var results = changes.results
-        var moduleNames = results
+        var moduleNames = _.uniq(results
           .map(function(r){ return r.id })
           .filter(function(m){
             return m.substring(0, 8) !== '_design/'
-          })
-        console.log('total modules changed', moduleNames.length)
+          }))
+        console.log('total modules to process', moduleNames.length)
         
         async.eachLimit(
           moduleNames, 
           100, 
           function(module, next){
-            pendingModules[module] = true
+            app.pendingModules[module] = true
             push.send(module)
             setImmediate(next)
           },
