@@ -22,21 +22,23 @@ var pendingModules = {}
 db(function(err, db){
   if (err) return console.error(err.message)
 
-  setInterval(function(){
-    console.log('Modules processed', totalModulesProcessed,
-      'modules saved', totalModulesSaved, 
-      'pending modules', Object.keys(pendingModules).length)
-    if (totalModulesProcessed - lastTotalModulesProcessed){
-      // seems all workers are idle
-      if (Object.keys(pendingModules).length === 0){
-        console.log('All modules have been processed')
-        process.exit()
-      }else{
-        retry(Object.keys(pendingModules))
+  function startMonitoring(){
+    setInterval(function(){
+      console.log('Modules processed', totalModulesProcessed,
+        'modules saved', totalModulesSaved, 
+        'pending modules', Object.keys(pendingModules).length)
+      if (totalModulesProcessed - lastTotalModulesProcessed){
+        // seems all workers are idle
+        if (Object.keys(pendingModules).length === 0){
+          console.log('All modules have been processed')
+          process.exit()
+        }else{
+          retry(Object.keys(pendingModules))
+        }
       }
-    }
-    lastTotalModulesProcessed = totalModulesProcessed
-  }, 10000)
+      lastTotalModulesProcessed = totalModulesProcessed
+    }, 10000)
+  }
 
   function retry(modules){
     console.log('Retrying', modules.length, 'modules')
@@ -105,6 +107,7 @@ db(function(err, db){
               {upsert: true},
               function(err){
                 console.log('All jobs sent.')
+                startMonitoring()
               }
             )
           }

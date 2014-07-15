@@ -20,10 +20,8 @@ db(function(err, db){
   if (err) return console.error(err.message)
   var Modules = db.collection('modules2')
 
-  var q = async.queue(function(job, done){
-    var cmd = job.command
-    var module = job.module
-    testTheModule(module, done)
+  var q = async.queue(function(module, done){
+    processModule(module, done)
   }, 2)
 
   pull.on('message', function(msg){
