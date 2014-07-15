@@ -84,7 +84,7 @@ db(function(err, db){
     if (app.processedModules[module]){
       console.warn(module, 'was processed a second time') 
     }else{
-      app.processedModules[results._id] = true
+      app.processedModules[result._id] = true
       delete app.pendingModules[result._id]
     }
     q.push(result)
