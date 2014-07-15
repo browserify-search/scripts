@@ -43,10 +43,7 @@ db(function(err, db){
   function retry(modules){
     console.log('Retrying', modules.length, 'modules')
     for (var i = 0; i < modules.length; i++){
-      push.send(JSON.stringify({
-        command: 'test',
-        module: modules[i]
-      }))
+      push.send(modules[i])
     }
   }
 
@@ -54,7 +51,9 @@ db(function(err, db){
   var q = async.cargo(function(results, done){
     var batch = Modules.initializeUnorderedBulkOp()
     for (var i = 0; i < results.length; i++){
-      batch.insert(results[i])
+      var result = results[i]
+      batch.find({_id: result._id}).upsert()
+        .updateOne(result)
     }
     var start = +new Date
     batch.execute(function(err){
