@@ -32,9 +32,12 @@ db(function(err, db){
     getModuleInfo(module, function(err, info){
       if (err) return done(err)
 
+      if (!isValid(info)){
+        return done()
+      }
+      var version = info['dist-tags'].latest
       var search = searchInfo(info)
       var features = easyFeatures(info)
-      var version = info['dist-tags'].latest
       testModule(module, dir, function(err, results){
         if (err){
           console.error(module, err.message)
@@ -57,3 +60,11 @@ db(function(err, db){
 
 })
 
+function isValid(pkg){
+  var tags = pkg['dist-tags']
+  if (!tags) return false
+  var latest = tags.latest
+  if (!latest) return false
+  if (!pkg.versions[latest]) return false
+  return true
+}
