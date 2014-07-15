@@ -33,7 +33,7 @@ db(function(err, db){
       var modulesPending = Object.keys(app.pendingModules).length
       console.log(
         'Modules processed', 
-        modulesProcessed
+        modulesProcessed,
         'Saved Modules',
         Object.keys(app.savedModules).length,
         'Pending modules', 
