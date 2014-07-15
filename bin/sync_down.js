@@ -80,7 +80,7 @@ db(function(err, db){
 
   pull.on('message', function(result){
     result = JSON.parse('' + result)
-    var module = results._id
+    var module = result._id
     if (app.processedModules[module]){
       console.warn(module, 'was processed a second time') 
     }else{
