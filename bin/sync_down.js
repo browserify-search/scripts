@@ -27,7 +27,7 @@ db(function(err, db){
       console.log('Modules processed', totalModulesProcessed,
         'modules saved', totalModulesSaved, 
         'pending modules', Object.keys(pendingModules).length)
-      if (totalModulesProcessed - lastTotalModulesProcessed){
+      if (totalModulesProcessed == lastTotalModulesProcessed){
         // seems all workers are idle
         if (Object.keys(pendingModules).length === 0){
           console.log('All modules have been processed')
