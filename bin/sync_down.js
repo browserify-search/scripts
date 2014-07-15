@@ -66,7 +66,7 @@ db(function(err, db){
   pull.on('message', function(result){
     totalModulesProcessed++
     result = JSON.parse('' + result)
-    delete pendingModules[result.name]
+    delete pendingModules[result._id]
     q.push(result)
   })
 
