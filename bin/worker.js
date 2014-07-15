@@ -27,7 +27,7 @@ db(function(err, db){
   }, 2)
 
   pull.on('message', function(msg){
-    q.push(JSON.parse(msg.toString()))
+    q.push(msg.toString())
   })
 
   function processModule(module, done){
