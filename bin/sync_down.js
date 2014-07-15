@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-var request = require('request')
+var request = require('superagent')
 var async = require('async')
 var zmq = require('zmq')
 var os = require('os')
@@ -39,6 +39,7 @@ db(function(err, db){
   }, 10000)
 
   function retry(modules){
+    console.log('Retrying', modules.length, 'modules')
     for (var i = 0; i < modules.length; i++){
       push.send(JSON.stringify({
         command: 'test',
@@ -92,19 +93,8 @@ db(function(err, db){
           moduleNames, 
           100, 
           function(module, next){
-            
-            /*push.send(JSON.stringify({
-              command: 'import',
-              module: module
-            }))*/
-            
             pendingModules[module] = true
-
-            push.send(JSON.stringify({
-              command: 'test',
-              module: module
-            }))
-
+            push.send(module)
             setImmediate(next)
           },
           function(err){
@@ -115,7 +105,6 @@ db(function(err, db){
               {upsert: true},
               function(err){
                 console.log('All jobs sent.')
-                
               }
             )
           }

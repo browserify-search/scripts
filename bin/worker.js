@@ -23,32 +23,37 @@ db(function(err, db){
   var q = async.queue(function(job, done){
     var cmd = job.command
     var module = job.module
-    if (cmd === 'test'){
-      testTheModule(module, job.version, done)
-    }else{
-      done()
-    }
+    testTheModule(module, done)
   }, 2)
 
   pull.on('message', function(msg){
     q.push(JSON.parse(msg.toString()))
   })
 
-  function testTheModule(module, version, done){
-    testModule(module, dir, function(err, results){
-      if (err){
-        console.error(module, err.message)
+  function processModule(module, done){
+    getModuleInfo(module, function(err, info){
+      if (err) return done(err)
+
+      var search = searchInfo(info)
+      var features = easyFeatures(info)
+      var version = info['dist-tags'].latest
+      testModule(module, dir, function(err, results){
+        if (err){
+          console.error(module, err.message)
+          done()
+          return
+        }
+        push.send(
+          JSON.stringify({
+            _id: module, 
+            version: version,
+            search: search,
+            features: features,
+            testResults: results
+          })
+        )
         done()
-        return
-      }
-      push.send(
-        JSON.stringify({
-          name: module, 
-          version: version,
-          testResults: results
-        })
-      )
-      done()
+      })
     })
   }
 
