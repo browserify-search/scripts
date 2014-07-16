@@ -33,6 +33,12 @@ db(function(err, db){
       if (err) return done(err)
 
       if (!isValid(info)){
+        push.send(
+          JSON.stringify({
+            _id: module,
+            invalid: true
+          })
+        )
         return done()
       }
       var version = info['dist-tags'].latest

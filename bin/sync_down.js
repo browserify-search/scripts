@@ -86,8 +86,8 @@ db(function(err, db){
     }else{
       app.processedModules[result._id] = true
       delete app.pendingModules[result._id]
+      q.push(result)
     }
-    q.push(result)
   })
 
   var LastSeq = db.collection('last_seq')
