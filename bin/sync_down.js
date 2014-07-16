@@ -38,8 +38,8 @@ db(function(err, db){
         Object.keys(app.savedModules).length,
         'Pending modules', 
         modulesPending)
-      if (modulesProcessed == app.lastModulesProcessed){
-        // seems all workers are idle
+      if (modulesProcessed - app.lastModulesProcessed < 100){
+        // we are almost done, let's kick it up a notch
         if (modulesPending === 0){
           console.log('All modules have been processed')
           process.exit()
