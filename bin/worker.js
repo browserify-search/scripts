@@ -30,7 +30,15 @@ db(function(err, db){
 
   function processModule(module, done){
     getModuleInfo(module, function(err, info){
-      if (err) return done(err)
+      if (err){
+        push.send(
+          JSON.stringify({
+            _id: module,
+            invalid: true
+          })
+        )
+        return done()
+      }
 
       if (!isValid(info)){
         push.send(
