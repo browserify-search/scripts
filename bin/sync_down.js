@@ -81,7 +81,7 @@ db(function(err, db){
   pull.on('message', function(result){
     result = JSON.parse('' + result)
     var module = result._id
-    if (app.processedModules[module]){
+    if (Object.hasOwnProperty.call(app.processedModules, module)){
       console.warn(module, 'was processed a second time') 
     }else{
       app.processedModules[result._id] = true
