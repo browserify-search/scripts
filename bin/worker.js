@@ -22,7 +22,7 @@ db(function(err, db){
 
   var q = async.queue(function(module, done){
     processModule(module, done)
-  }, 2)
+  }, 4)
 
   pull.on('message', function(msg){
     q.push(msg.toString())
