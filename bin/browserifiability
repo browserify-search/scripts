@@ -2,136 +2,26 @@
 
 var cmdLn = require('cmd-ln')
 var db = require('../lib/db')
-var coreModules = require('../lib/core_modules')
+var browserifiability = require('../lib/browserifiability')
 
 cmdLn(function(moduleName){
 
-  var criteria = [
-    new Feature('hasTestling'),
-    new Feature('hasBrowserKeyword'),
-    new Feature('hasBrowserifyField'),
-    new Feature('hasBrowserInDescription'),
-    new Feature('hasBrowserInReadme'),
-    //new Feature('hasPluginInDescription'),
-    //new Feature('hasPluginInReadme'),
-    new Feature('hasGruntInName'),
-    new Feature('hasGruntInDescription'),
-    new Feature('hasGruntInReadme'),
-    new Feature('hasExpressInName'),
-    new Feature('hasExpressInDescription'),
-    new Feature('hasExpressInReadme')
-  ].concat(
-    coreModules.map(function(module){
-      return new CoreDep(module)
-    })
-  )
-
   db(function(err, db){
-    var TestSummary = db.collection('test_summary')
     var Modules = db.collection('modules')
-
+    var TestSummary = db.collection('test_summary')
+    
     Modules.findOne({_id: moduleName}, function(err, module){
-      if (err) return finish()
+      if (err) return callback(err)
       TestSummary.find().toArray(function(err, testSummary){
-        if (err) return finish()
-        console.log(JSON.stringify(module, null, '  '))
-        console.log(browserifiability(module, testSummary, criteria))
-        finish()
+        if (err) return callback(err)
+
+        browserifiability(module, testSummary, function(err, value){
+          if (err) console.error(err.message)
+          else console.log(value)
+          db.close()
+        })
       })
     })
-
-    function finish(){
-      db.close()
-    }
-
   })
 
 })
-
-function browserifiability(module, testSummary, criteria){
-  if (!module.testResults.install.passed) return 0
-  if (!module.testResults.browserify.bundle.passed) return 0
-  var Pbr = baseP(testSummary)
-  var passed = testSummary.filter(prop('passed'))
-  var failed = testSummary.filter(not(prop('passed')))
-  var Pgood = Pbr
-  var Pbad = 1 - Pbr
-  for (var i = 0; i < criteria.length; i++){
-    console.log('p', Pgood / (Pgood + Pbad), Pgood, Pbad)
-    var criterion = criteria[i]
-    var pf
-    if (criterion.valueForModule(module)){
-      console.log('applying does', criterion.display)
-      Pgood *= passed.filter(criterion.valueForSummary, criterion).length / passed.length
-      Pbad *= failed.filter(criterion.valueForSummary, criterion).length / failed.length
-    }else{
-      console.log('applying not', criterion.display)
-      Pgood *= passed.filter(not(criterion.valueForSummary), criterion).length / passed.length
-      Pbad *= failed.filter(not(criterion.valueForSummary), criterion).length / failed.length
-    }
-  }
-  return Pgood / (Pgood + Pbad)
-}
-
-function baseP(summary){
-  return summary.filter(prop('passed')).length / 
-    summary.length
-}
-
-function prop(name){
-  var ret = function(obj){
-    return obj[name]
-  }
-  ret.display = name
-  return ret
-}
-
-function hasCoreDep(moduleName){
-  var ret = function(module){
-    if (module.coreDeps){
-      return module.coreDeps.indexOf(moduleName) !== -1
-    }else{
-      return module.testResults.coreDeps[moduleName]
-    }
-  }
-  ret.display = 'has core dep ' + moduleName
-  return ret
-}
-
-function and(fn1, fn2){
-  return function(obj){
-    return fn1(obj) && fn2(obj)
-  }
-}
-
-function not(fn){
-  var ret = function(){
-    return !fn.apply(this, arguments)
-  }
-  ret.display = 'not ' + fn.display
-  return ret
-}
-
-function Feature(name){
-  this.name = this.display = name
-}
-
-Feature.prototype.valueForSummary = function(summary){
-  return summary[this.name]
-}
-
-Feature.prototype.valueForModule = function(module){
-  return module.features[this.name]
-}
-
-function CoreDep(dep){
-  this.dep = this.display = dep
-}
-
-CoreDep.prototype.valueForSummary = function(summary){
-  return summary.coreDeps.indexOf(this.dep) !== -1
-}
-
-CoreDep.prototype.valueForModule = function(module){
-  return module.testResults.coreDeps[this.dep]
-}
