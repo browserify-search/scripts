@@ -25,7 +25,7 @@ db(function(err, db){
   TestSummary.find().toArray(function(err, testSummary){
     var q = async.queue(function(module, done){
       processModule(module, testSummary, done)
-    }, 4)
+    }, 2)
     
     pull.on('message', function(msg){
       q.push(msg.toString())
