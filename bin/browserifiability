@@ -4,39 +4,38 @@ var cmdLn = require('cmd-ln')
 var db = require('../lib/db')
 var coreModules = require('../lib/core_modules')
 
-var criteria = [
-  prop('hasTestling'),
-  prop('hasBrowserKeyword'),
-  prop('hasBrowserifyField'),
-  prop('hasBrowserInDescription'),
-  prop('hasBrowserInReadme'),
-  prop('hasPluginInDescription'),
-  prop('hasPluginInReadme'),
-  prop('hasGruntInName'),
-  prop('hasGruntInDescription'),
-  prop('hasGruntInReadme'),
-  prop('hasExpressInName'),
-  prop('hasExpressInDescription'),
-  prop('hasExpressInReadme')
-].concat(
-  coreModules.map(function(module){
-    return hasCoreDep(module)
-  })
-)
-
-
 cmdLn(function(moduleName){
+
+  var criteria = [
+    new Feature('hasTestling'),
+    new Feature('hasBrowserKeyword'),
+    new Feature('hasBrowserifyField'),
+    new Feature('hasBrowserInDescription'),
+    new Feature('hasBrowserInReadme'),
+    //new Feature('hasPluginInDescription'),
+    //new Feature('hasPluginInReadme'),
+    new Feature('hasGruntInName'),
+    new Feature('hasGruntInDescription'),
+    new Feature('hasGruntInReadme'),
+    new Feature('hasExpressInName'),
+    new Feature('hasExpressInDescription'),
+    new Feature('hasExpressInReadme')
+  ].concat(
+    coreModules.map(function(module){
+      return new CoreDep(module)
+    })
+  )
 
   db(function(err, db){
     var TestSummary = db.collection('test_summary')
     var Modules = db.collection('modules')
 
-    Modules.findOne({name: moduleName}, function(err, module){
+    Modules.findOne({_id: moduleName}, function(err, module){
       if (err) return finish()
       TestSummary.find().toArray(function(err, testSummary){
         if (err) return finish()
         console.log(JSON.stringify(module, null, '  '))
-        console.log(browserifiability(module, testSummary))
+        console.log(browserifiability(module, testSummary, criteria))
         finish()
       })
     })
@@ -49,27 +48,26 @@ cmdLn(function(moduleName){
 
 })
 
-function browserifiability(module, testSummary){
+function browserifiability(module, testSummary, criteria){
   if (!module.testResults.install.passed) return 0
   if (!module.testResults.browserify.bundle.passed) return 0
-  if (!module.testResults.browserify.test.passed) return 0
   var Pbr = baseP(testSummary)
   var passed = testSummary.filter(prop('passed'))
   var failed = testSummary.filter(not(prop('passed')))
   var Pgood = Pbr
   var Pbad = 1 - Pbr
   for (var i = 0; i < criteria.length; i++){
-    console.log('p', Pgood / (Pgood + Pbad))
+    console.log('p', Pgood / (Pgood + Pbad), Pgood, Pbad)
     var criterion = criteria[i]
     var pf
-    if (criterion(module)){
+    if (criterion.valueForModule(module)){
       console.log('applying does', criterion.display)
-      Pgood *= passed.filter(criterion).length / passed.length
-      Pbad *= failed.filter(criterion).length / failed.length
+      Pgood *= passed.filter(criterion.valueForSummary, criterion).length / passed.length
+      Pbad *= failed.filter(criterion.valueForSummary, criterion).length / failed.length
     }else{
       console.log('applying not', criterion.display)
-      Pgood *= passed.filter(not(criterion)).length / passed.length
-      Pbad *= failed.filter(not(criterion)).length / failed.length
+      Pgood *= passed.filter(not(criterion.valueForSummary), criterion).length / passed.length
+      Pbad *= failed.filter(not(criterion.valueForSummary), criterion).length / failed.length
     }
   }
   return Pgood / (Pgood + Pbad)
@@ -78,25 +76,6 @@ function browserifiability(module, testSummary){
 function baseP(summary){
   return summary.filter(prop('passed')).length / 
     summary.length
-}
-
-function pFactor(criterion, summary){
-  var total = summary.length
-  var numPasses = summary.filter(prop('passed')).length
-  var numUsesAndPasses = summary
-    .filter(and(prop('passed'), criterion)).length
-  var numUses = summary.filter(criterion).length
-  var prefix = criterion.display
-  console.log(prefix, 'total', total)
-  console.log(prefix, 'numPasses', numPasses)
-  console.log(prefix, 'numUsesAndPasses', numUsesAndPasses)
-  console.log(prefix, 'numUses', numUses)
-  var pba = numUsesAndPasses / numPasses
-  var pa = numPasses / total
-  var pb = numUses / total
-  var pab = pba * pa / pb
-  var pFactor = pba / pb
-  return pFactor
 }
 
 function prop(name){
@@ -127,8 +106,32 @@ function and(fn1, fn2){
 
 function not(fn){
   var ret = function(){
-    return !fn.apply(null, arguments)
+    return !fn.apply(this, arguments)
   }
   ret.display = 'not ' + fn.display
   return ret
+}
+
+function Feature(name){
+  this.name = this.display = name
+}
+
+Feature.prototype.valueForSummary = function(summary){
+  return summary[this.name]
+}
+
+Feature.prototype.valueForModule = function(module){
+  return module.features[this.name]
+}
+
+function CoreDep(dep){
+  this.dep = this.display = dep
+}
+
+CoreDep.prototype.valueForSummary = function(summary){
+  return summary.coreDeps.indexOf(this.dep) !== -1
+}
+
+CoreDep.prototype.valueForModule = function(module){
+  return module.testResults.coreDeps[this.dep]
 }
