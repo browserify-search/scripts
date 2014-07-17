@@ -3,6 +3,7 @@
 var zmq = require('zmq')
 var async = require('async')
 var db = require('../lib/db')
+var path = require('path')
 var pull = zmq.socket('pull')
 var push = zmq.socket('push')
 var ip = '199.116.112.230'
@@ -12,7 +13,7 @@ var getModuleInfo = require('../lib/npm/get_module_info')
 var searchInfo = require('../lib/npm/search_info')
 var easyFeatures = require('../lib/npm/easy_features')
 var debug = require('debug')('worker')
-
+var rimraf = require('rimraf')
 pull.connect('tcp://' + ip + ':3000')
 push.connect('tcp://' + ip + ':3001')
 
@@ -55,7 +56,7 @@ db(function(err, db){
       testModule(module, dir, function(err, results){
         if (err){
           console.error(module, err.message)
-          done()
+          finish()
           return
         }
         push.send(
@@ -67,7 +68,14 @@ db(function(err, db){
             testResults: results
           })
         )
-        done()
+
+        finish()
+
+        function finish(){
+          rimraf(path.join(dir, module), function(){
+            done()
+          })
+        }
       })
     })
   }
