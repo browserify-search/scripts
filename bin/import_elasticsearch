@@ -1,1 +1,1 @@
-bin/echo_mongo.js | curl -s -XPOST 199.116.112.230:9200/_bulk --data-binary @-
+bin/echo_mongo.js | curl -s -XPOST 199.116.112.230:9200/_bulk --data-binary @-; echo
