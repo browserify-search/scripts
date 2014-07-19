@@ -1,0 +1,34 @@
+#! /bin/bash
+
+curl -XDELETE http://forum.atlantajavascript.com:9200/browserify-search/
+curl -XPUT http://forum.atlantajavascript.com:9200/browserify-search/ -d '
+{
+  "mappings": {
+    "module": {
+      "properties": {
+        "browserifiability": {
+          "type": "float"
+        },
+        "search": {
+          "properties": {
+            "description": {
+              "type": "string",
+              "boost": 1.2
+            },
+            "keywords": {
+              "type": "string",
+              "boost": 1.5
+            },
+            "name": {
+              "type": "string",
+              "boost": 2.0
+            },
+            "readme": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}'

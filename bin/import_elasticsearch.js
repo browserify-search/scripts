@@ -24,9 +24,13 @@ db(function(err, db){
         else process.stdout.write('.'.green)
         done()
       })
-  }, 10)
+  }, 50)
 
   Modules.find({browserifiability: {$gt: 0}}).each(function(err, module){
+    if (module === null){
+      db.close()
+      return
+    }
     q.push(module)
   })
 
