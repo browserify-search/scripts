@@ -12,7 +12,7 @@ cmdLn(function(query){
       size: 10,
       query: {
         function_score: {
-          score_mode: 'first',
+          score_mode: 'multiply',
           boost_mode: 'multiply',
           query: {
             multi_match: {
@@ -28,8 +28,12 @@ cmdLn(function(query){
           functions: [
             {
               script_score: {
-                script: "doc['browserifiability'].value",
-                lang: 'mvel'
+                script: "doc['browserifiability'].value"
+              }
+            },
+            {
+              script_score: {
+                script: "doc['downloadsLastMonth.cdf'].value"
               }
             }
           ]

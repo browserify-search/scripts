@@ -16,6 +16,9 @@ curl -XPUT http://forum.atlantajavascript.com:9200/browserify-search/ -d '
             },
             "count": {
               "type": "long"
+            },
+            "cdf": {
+              "type": "float"
             }
           }
         },
