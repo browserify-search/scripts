@@ -25,7 +25,6 @@ db(function(err, db){
 
       var cdf = dist.cdf(module.downloadsLastMonth.count)
       module.downloadsLastMonth.cdf = cdf
-      console.log('module', module._id)
       request
         .put('http://forum.atlantajavascript.com:9200/browserify-search/module/' + module._id)
         .send(JSON.stringify({
@@ -49,9 +48,9 @@ db(function(err, db){
     Modules
       .find({browserifiability: {$gt: 0}})
       .each(function(err, module){
-      if (module === null) return
-      q.push(module)
-    })
+        if (module === null) return
+        q.push(module)
+      })
   })
 
 })
