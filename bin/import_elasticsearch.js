@@ -17,14 +17,15 @@ db(function(err, db){
       .put('http://localhost:9200/browserify-search/module/' + module._id)
       .send(JSON.stringify({
         browserifiability: module.browserifiability,
-        search: module.search
+        search: module.search,
+        downloadsLastMonth: module.downloadsLastMonth
       }))
       .end(function(err, reply){
         if (err) process.stdout.write('.'.red)
         else process.stdout.write('.'.green)
         done()
       })
-  }, 50)
+  }, 200)
 
   Modules.find({browserifiability: {$gt: 0}}).each(function(err, module){
     if (module === null){

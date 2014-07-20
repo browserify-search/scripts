@@ -8,7 +8,8 @@ cmdLn(function(query){
   request
     .get('http://forum.atlantajavascript.com:9200/browserify-search/module/_search')
     .send(JSON.stringify({
-      size: 100,
+      from: 0,
+      size: 10,
       query: {
         function_score: {
           score_mode: 'first',

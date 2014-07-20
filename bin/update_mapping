@@ -9,6 +9,16 @@ curl -XPUT http://forum.atlantajavascript.com:9200/browserify-search/ -d '
         "browserifiability": {
           "type": "float"
         },
+        "downloadsLastMonth": {
+          "properties": {
+            "start": {
+              "type": "string"
+            },
+            "count": {
+              "type": "long"
+            }
+          }
+        },
         "search": {
           "properties": {
             "description": {
