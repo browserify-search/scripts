@@ -17,7 +17,8 @@ db(function(err, db){
     
     var info = stats['downloadsLastMonth.count']
     var dist = gaussian(info.avg, info.variance)
-    
+    var allQueued = false
+
     var q = async.queue(function(module, done){
       if (typeof module.search.readme !== 'string'){
         module.search.readme = ''
@@ -41,14 +42,19 @@ db(function(err, db){
     }, 200)
 
     q.drain = function(){
-      console.log('All', count, 'modules imported')
-      db.close()
+      if (allQueued){
+        console.log('All', count, 'modules imported.')
+        db.close()
+      }
     }
 
     Modules
       .find({browserifiability: {$gt: 0}})
       .each(function(err, module){
-        if (module === null) return
+        if (module === null){
+          allQueued = true
+          return
+        }
         q.push(module)
       })
   })
