@@ -48,7 +48,6 @@ db(function(err, db){
 
     Modules
       .find({browserifiability: {$gt: 0}})
-      .limit(10)
       .each(function(err, module){
       if (module === null) return
       q.push(module)
