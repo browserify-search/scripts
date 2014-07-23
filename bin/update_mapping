@@ -30,14 +30,15 @@ curl -XPUT http://forum.atlantajavascript.com:9200/browserify-search/ -d '
             },
             "keywords": {
               "type": "string",
-              "boost": 1.5
+              "boost": 1.2
             },
             "name": {
               "type": "string",
-              "boost": 2.0
+              "boost": 1.4
             },
             "readme": {
-              "type": "string"
+              "type": "string",
+              "boost": 0.5
             }
           }
         }

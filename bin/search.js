@@ -9,7 +9,7 @@ cmdLn(function(query){
     .get('http://forum.atlantajavascript.com:9200/browserify-search/module/_search')
     .send(JSON.stringify({
       from: 0,
-      size: 10,
+      size: 50,
       query: {
         function_score: {
           score_mode: 'multiply',
@@ -33,7 +33,7 @@ cmdLn(function(query){
             },
             {
               script_score: {
-                script: "doc['downloadsLastMonth.cdf'].value"
+                script: "pow(doc['downloadsLastMonth.cdf'].value, 1.5)"
               }
             }
           ]
@@ -57,13 +57,14 @@ cmdLn(function(query){
           module.browserifiability, 
           module.search.description)
       })*/
-      results.hits.hits.forEach(function(hit){
+      results.hits.hits.forEach(function(hit, i){
         var module = hit._source
         var score = hit._score
         console.log(
-          module.search.name)
-        console.log('  ',
-          score, module.browserifiability, 
+          (i + 1) + '.', module.search.name, '-',
+          score.toFixed(2), 
+          module.downloadsLastMonth.cdf.toFixed(2),
+          module.browserifiability.toFixed(2), 
           module.search.description)
       })
       //console.log(results.hits.hits)
