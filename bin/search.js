@@ -3,10 +3,11 @@
 var request = require('superagent')
 var cmdLn = require('cmd-ln')
 require('colors')
+var config = require('../config.json')
 
 cmdLn(function(query){
   request
-    .get('http://forum.atlantajavascript.com:9200/browserify-search/module/_search')
+    .get(config.elastic_search + '/browserify-search/module/_search')
     .send(JSON.stringify({
       from: 0,
       size: 50,
