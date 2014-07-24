@@ -1,3 +1,4 @@
 /db.json
 /bin/mongo
 /node_modules
+/config.json

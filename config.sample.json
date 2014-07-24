@@ -1,0 +1,7 @@
+{
+  "mongo": "mongodb:some.db.com",
+  "npm_api": "http://some.npm.com/registry",
+  "npm_registry": "http://some.npm.com/registry/_design/scratch/_rewrite"
+  "zmq_master": "<some.ip.address>",
+  "elastic_search": "http://some.elasticsearch.instance.com/"
+}

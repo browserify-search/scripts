@@ -5,6 +5,7 @@ var db = require('../lib/db')
 var async = require('async')
 require('colors')
 var gaussian = require('gaussian')
+var config = require('../config.json')
 
 db(function(err, db){
 
@@ -27,7 +28,8 @@ db(function(err, db){
       var cdf = dist.cdf(module.downloadsLastMonth.count)
       module.downloadsLastMonth.cdf = cdf
       request
-        .put('http://forum.atlantajavascript.com:9200/browserify-search/module/' + module._id)
+        .put(config.elastic_search + 
+          '/browserify-search/module/' + module._id)
         .send(JSON.stringify({
           browserifiability: module.browserifiability,
           search: module.search,
