@@ -36,7 +36,10 @@ db(function(err, db){
           downloadsLastMonth: module.downloadsLastMonth
         }))
         .end(function(err, reply){
-          if (err) process.stdout.write('.'.red)
+          if (err){
+            console.log(err.message)
+            process.exit(1)
+          }
           else process.stdout.write('.'.green)
           count++
           done()
