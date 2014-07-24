@@ -16,8 +16,8 @@ var easyFeatures = require('../lib/npm/easy_features')
 var browserifiability = require('../lib/browserifiability')
 var debug = require('debug')('worker')
 var rimraf = require('rimraf')
-pull.connect('tcp://' + ip + ':3000')
-push.connect('tcp://' + ip + ':3001')
+pull.connect('tcp://' + ip + ':8010')
+push.connect('tcp://' + ip + ':8011')
 
 db(function(err, db){
   if (err) return console.error(err.message)

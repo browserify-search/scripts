@@ -13,8 +13,8 @@ var _ = require('lodash')
 var ip = os.networkInterfaces().eth0[0].address
 var replify = require('replify')
 console.log('binding to', ip)
-pull.bindSync('tcp://' + ip + ':3001')
-push.bindSync('tcp://' + ip + ':3000')
+pull.bindSync('tcp://' + ip + ':8010')
+push.bindSync('tcp://' + ip + ':8011')
 
 var app = {
   lastModulesProcessed: -1,
