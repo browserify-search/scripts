@@ -2,61 +2,32 @@
 
 var request = require('superagent')
 var async = require('async')
-var zmq = require('zmq')
 var os = require('os')
 var db = require('../lib/db')
 var config = require('../config.json')
 var url = config.npm_api + '/_changes'
-var push = zmq.socket('push')
-var pull = zmq.socket('pull')
 var _ = require('lodash')
-var ip = os.networkInterfaces().eth0[0].address
-var replify = require('replify')
-console.log('binding to', ip)
-pull.bindSync('tcp://' + ip + ':8010')
-push.bindSync('tcp://' + ip + ':8011')
+var kue = require('kue')
+var jobs = kue.createQueue({redis: config.redis})
 
 var app = {
-  lastModulesProcessed: -1,
   pendingModules: {},
-  processedModules: {},
-  savedModules: {}
+  processedModules: {}
 }
 
-replify('sync_down', app)
+var port = 8012
+kue.app.listen(port)
+console.log('Listening on port', port)
 
 db(function(err, db){
   if (err) return console.error(err.message)
 
   function startMonitoring(){
     setInterval(function(){
-      var modulesProcessed = Object.keys(app.processedModules).length
-      var modulesPending = Object.keys(app.pendingModules).length
       console.log(
-        'Modules processed', 
-        modulesProcessed,
-        'Saved Modules',
-        Object.keys(app.savedModules).length,
-        'Pending modules', 
-        modulesPending)
-      if (modulesProcessed - app.lastModulesProcessed < 100){
-        // we are almost done, let's kick it up a notch
-        if (modulesPending === 0){
-          console.log('All modules have been processed')
-          process.exit()
-        }else{
-          retry(Object.keys(app.pendingModules))
-        }
-      }
-      app.lastModulesProcessed = modulesProcessed
+        'Processed', Object.keys(app.processedModules).length,
+        'Pending', Object.keys(app.pendingModules).length)
     }, 10000)
-  }
-
-  function retry(modules){
-    console.log('Retrying', modules.length, 'modules')
-    for (var i = 0; i < modules.length; i++){
-      push.send(modules[i])
-    }
   }
 
   var Modules = db.collection('modules')
@@ -64,8 +35,8 @@ db(function(err, db){
     var batch = Modules.initializeUnorderedBulkOp()
     for (var i = 0; i < results.length; i++){
       var result = results[i]
-      app.savedModules[result._id] = true
-      batch.find({_id: result._id}).upsert()
+      batch.find({_id: result._id})
+        .upsert()
         .updateOne(result)
     }
     var start = +new Date
@@ -73,22 +44,9 @@ db(function(err, db){
       var end = +new Date
       for (var i = 0; i < results.length; i++){
         var result = results[i]
-        app.savedModules[result._id] = true
       }
       done(err)
     })
-  })
-
-  pull.on('message', function(result){
-    result = JSON.parse('' + result)
-    var module = result._id
-    if (app.processedModules[module] === true){
-      console.warn(module, 'was processed a second time') 
-    }else{
-      app.processedModules[result._id] = true
-      delete app.pendingModules[result._id]
-      q.push(result)
-    }
   })
 
   var LastSeq = db.collection('last_seq')
@@ -116,8 +74,16 @@ db(function(err, db){
           100, 
           function(module, next){
             app.pendingModules[module] = true
-            push.send(module)
-            setImmediate(next)
+            var job = jobs.create('module', {
+              title: 'Process module ' + module,
+              module: module
+            }).save(next)
+            job.on('complete', function(results){
+              delete app.pendingModules[module]
+              app.processedModules[module] = true
+              console.log('Done processing', module)
+              q.push(results)
+            })
           },
           function(err){
             if (err) console.error(err.message)

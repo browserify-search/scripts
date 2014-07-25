@@ -1,11 +1,8 @@
 #! /usr/bin/env node
 
-var zmq = require('zmq')
 var async = require('async')
 var db = require('../lib/db')
 var path = require('path')
-var pull = zmq.socket('pull')
-var push = zmq.socket('push')
 var config = require('../config.json')
 var ip = config.zeromq_master
 var testModule = require('../lib/test_module')
@@ -16,20 +13,20 @@ var easyFeatures = require('../lib/npm/easy_features')
 var browserifiability = require('../lib/browserifiability')
 var debug = require('debug')('worker')
 var rimraf = require('rimraf')
-pull.connect('tcp://' + ip + ':8010')
-push.connect('tcp://' + ip + ':8011')
+var kue = require('kue')
+var jobs = kue.createQueue({redis: config.redis})
+var getIP = require('../lib/get_ip')
+var ip = getIP()
 
 db(function(err, db){
   if (err) return console.error(err.message)
 
   var TestSummary = db.collection('test_summary')
   TestSummary.find().toArray(function(err, testSummary){
-    var q = async.queue(function(module, done){
+
+    jobs.process('module', 2, function(job, done){
+      var module = job.data.module
       processModule(module, testSummary, done)
-    }, 2)
-    
-    pull.on('message', function(msg){
-      q.push(msg.toString())
     })
   })  
 
@@ -38,23 +35,17 @@ db(function(err, db){
 function processModule(module, testSummary, done){
   getModuleInfo(module, function(err, info){
     if (err){
-      push.send(
-        JSON.stringify({
-          _id: module,
-          invalid: true
-        })
-      )
-      return done()
+      return done(null, {
+        _id: module,
+        invalid: true
+      })
     }
 
     if (!isValid(info)){
-      push.send(
-        JSON.stringify({
-          _id: module,
-          invalid: true
-        })
-      )
-      return done()
+      return done(null, {
+        _id: module,
+        invalid: true
+      })
     }
     var version = info['dist-tags'].latest
     var search = searchInfo(info)
@@ -83,13 +74,12 @@ function processModule(module, testSummary, done){
           results.browserifiability = browserifiability
         }
 
-        push.send(JSON.stringify(results))
         finish()
       })
 
       function finish(){
         rimraf(path.join(dir, module), function(){
-          done()
+          done(null, results)
         })
       }
     })

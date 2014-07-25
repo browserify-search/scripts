@@ -10,7 +10,7 @@ cmdLn(function(query){
     .get(config.elastic_search + '/browserify-search/module/_search')
     .send(JSON.stringify({
       from: 0,
-      size: 50,
+      size: 10,
       query: {
         function_score: {
           score_mode: 'multiply',
@@ -58,6 +58,9 @@ cmdLn(function(query){
           module.browserifiability, 
           module.search.description)
       })*/
+      var total = results.hits.total
+      var maxScore = results.hits.maxScore
+      
       results.hits.hits.forEach(function(hit, i){
         var module = hit._source
         var score = hit._score
@@ -68,6 +71,7 @@ cmdLn(function(query){
           module.browserifiability.toFixed(2), 
           module.search.description)
       })
+      console.log('Total hits:', total)
       //console.log(results.hits.hits)
     })
 })
