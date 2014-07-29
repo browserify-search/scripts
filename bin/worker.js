@@ -16,7 +16,8 @@ var getIP = require('../lib/get_ip')
 var zmq = require('zmq')
 var socket = zmq.socket('req')
 var ip = getIP()
-var concurrency = 2
+var concurrency = 1
+
 db(function(err, db){
   if (err) return console.error(err.message)
 
@@ -55,11 +56,6 @@ db(function(err, db){
 })
 
 function processModule(module, testSummary, done){
-  setTimeout(function(){
-    done(null, {})
-  }, 1000)
-
-  return
 
   getModuleInfo(module, function(err, info){
     if (err){
