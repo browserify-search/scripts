@@ -67,7 +67,7 @@ function getLastSeq(db, callback){
   var LastSeq = db.collection('last_seq')
   LastSeq.findOne({_id: 1}, function(err, lastSeqDoc){
     if (err) return callback(err)
-    var lastSeq = lastSeqDoc.last_seq
+    var lastSeq = lastSeqDoc && lastSeqDoc.last_seq
     callback(null, lastSeq)
   })
 }
