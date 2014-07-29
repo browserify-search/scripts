@@ -27,15 +27,18 @@ db(function(err, db){
   if (err) return console.error(err.message)
 
   var writeQueue = setupWriteQueue(db)
-  getLastSeq(db, function(err, lastSeq){
-    console.log('Previous seq', lastSeq)
-    request(url + '?since=' + lastSeq)
+  getLastSeq(db, function(err, prevLastSeq){
+    console.log('Previous last seq', prevLastSeq)
+    if (prevLastSeq){
+      url += '?since=' + prevLastSeq
+    }
+    request(url)
       .end(function(err, reply){
         err = err || reply.error
         if (err) return console.error(err.message)
         var changes = JSON.parse(reply.text)
         var lastSeq = changes.last_seq
-        console.log('New seq', lastSeq)
+        console.log('New last seq', lastSeq)
         app.pending = moduleNames(changes)
 
         console.log(app.pending.length + ' modules to process.')
