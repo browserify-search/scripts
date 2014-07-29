@@ -24,7 +24,10 @@ db(function(err, db){
   TestSummary.find().toArray(function(err, testSummary){
     socket.connect('tcp://' + config.zeromq_master + ':8001')
 
-    socket.send(JSON.stringify({type: 'new'}))
+    socket.send(JSON.stringify({
+      type: 'new',
+      id: ip
+    }))
     socket.on('message', function(msg){
       console.log('Got message ' + msg)
       msg = JSON.parse('' + msg)
@@ -33,6 +36,7 @@ db(function(err, db){
           socket.send(JSON.stringify({
             type: 'result',
             module: msg.module,
+            id: ip,
             value: result
           }))
         })

@@ -4,65 +4,80 @@ var request = require('superagent')
 var async = require('async')
 var os = require('os')
 var db = require('../lib/db')
+var CircularList = require('CBuffer')
 var config = require('../config.json')
 var url = config.npm_api + '/_changes'
 var _ = require('lodash')
 var zmq = require('zmq')
 
-var socket = zmq.socket('rep')
-
 var app = {
+  startTime: null,
+  endTime: null,
   pending: [],
   active: {},
-  complete: []
+  complete: [],
+  saved: 0,
+  rollingCompleteCounts: new CircularList(10)
 }
 
 db(function(err, db){
   if (err) return console.error(err.message)
 
-  function startMonitoring(){
-    setInterval(function(){
-      process.stdout.write(
-        '\r' + 
-        'pending ' + app.pending.length + 
-        ', active ' + Object.keys(app.active).length + 
-        ', complete ' + app.complete.length)
-    }, 1000)
-  }
-
   var writeQueue = setupWriteQueue(db)
-
-  var LastSeq = db.collection('last_seq')
-  LastSeq.findOne({_id: 1}, function(err, lastSeqDoc){
-    var lastSeq = lastSeqDoc.last_seq
+  getLastSeq(db, function(err, lastSeq){
     console.log('Previous seq', lastSeq)
     request(url + '?since=' + lastSeq)
       .end(function(err, reply){
         err = err || reply.error
         if (err) return console.error(err.message)
         var changes = JSON.parse(reply.text)
-
         var lastSeq = changes.last_seq
         console.log('New seq', lastSeq)
-        app.pending = _.uniq(changes.results
-          .map(function(r){ return r.id })
-          .filter(function(m){
-            return m.substring(0, 8) !== '_design/'
-          }))
+        app.pending = moduleNames(changes)
 
-        console.log(app.pending.length, 'modules to process.')
-        LastSeq.update(
-          {_id: 1}, 
-          {$set: {last_seq: lastSeq}}, 
-          {upsert: true},
-          function(err){
-            initializeSocket(writeQueue)
-            startMonitoring()
-          }
-        )
+        console.log(app.pending.length + ' modules to process.')
+        initializeSocket(writeQueue)
+        startMonitoring()
+        saveLastSeq(lastSeq)
       })
   })
 })
+
+function moduleNames(changes){
+  return _.uniq(changes.results
+    .map(function(r){ return r.id })
+    .filter(function(m){
+      return m.substring(0, 8) !== '_design/'
+    }))
+}
+
+function showActive(active){
+  var parts = []
+  for (var module in active){
+    var worker = active[module]
+    parts.push(module + ':' + worker)
+  }
+  return '[' + parts.join(' ') + ']'
+}
+
+function getLastSeq(db, callback){
+  var LastSeq = db.collection('last_seq')
+  LastSeq.findOne({_id: 1}, function(err, lastSeqDoc){
+    if (err) return callback(err)
+    var lastSeq = lastSeqDoc.last_seq
+    callback(null, lastSeq)
+  })
+}
+
+function saveLastSeq(db, callback){
+  var LastSeq = db.collection('last_seq')
+  LastSeq.update(
+    {_id: 1}, 
+    {$set: {last_seq: lastSeq}}, 
+    {upsert: true},
+    callback || function(){}
+  )
+}
 
 function setupWriteQueue(db){
   var Modules = db.collection('modules')
@@ -74,18 +89,15 @@ function setupWriteQueue(db){
         .upsert()
         .updateOne(result)
     }
-    var start = +new Date
     batch.execute(function(err){
-      var end = +new Date
-      for (var i = 0; i < results.length; i++){
-        var result = results[i]
-      }
+      app.saved += results.length
       done(err)
     })
   })
 }
 
 function initializeSocket(writeQueue){
+  var socket = zmq.socket('rep')
   socket.bind('tcp://' + config.zeromq_master + ':8001', function(err){
     if (err){
       console.error(err.message)
@@ -95,20 +107,23 @@ function initializeSocket(writeQueue){
     socket.on('message', function(msg){
       msg = JSON.parse('' + msg)
       if (msg.type === 'new'){
-        dispatchJob()
+        dispatchJob(msg.id)
       }else if (msg.type === 'result'){
         delete app.active[msg.module]
         app.complete.push(msg)
         writeQueue.push(msg.value)
-        dispatchJob()
+        dispatchJob(msg.id)
       }
     })
   })
 
-  function dispatchJob(){
+  function dispatchJob(worker){
+    if (app.startTime == null){
+      app.startTime = new Date().getTime()
+    }
     var module = app.pending.pop()
     if (module){
-      app.active[module] = true
+      app.active[module] = worker
       socket.send(JSON.stringify({
         type: 'module',
         module: module
@@ -121,4 +136,20 @@ function initializeSocket(writeQueue){
       process.exit()
     }
   }
+}
+
+function startMonitoring(){
+  setInterval(function(){
+    var completeCount = app.complete.length
+    app.rollingCompleteCounts.push(completeCount)
+    var rate = ((app.rollingCompleteCounts.last() - app.rollingCompleteCounts.first()) / 10).toFixed(1)
+    var totalRate = (completeCount * 1000 / (new Date().getTime() - app.startTime)).toFixed(1)
+    process.stdout.write(
+      '\r' + 
+      'pending ' + app.pending.length + 
+      ', active ' + Object.keys(app.active).length + 
+      ', complete ' + completeCount +
+      ', rt ' + rate +
+      ', trt ' + totalRate)
+  }, 1000)
 }
