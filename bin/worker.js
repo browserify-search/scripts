@@ -4,7 +4,6 @@ var async = require('async')
 var db = require('../lib/db')
 var path = require('path')
 var config = require('../config.json')
-var ip = config.zeromq_master
 var testModule = require('../lib/test_module')
 var dir = '/tmp/browserify-search'
 var getModuleInfo = require('../lib/npm/get_module_info')
@@ -13,9 +12,9 @@ var easyFeatures = require('../lib/npm/easy_features')
 var browserifiability = require('../lib/browserifiability')
 var debug = require('debug')('worker')
 var rimraf = require('rimraf')
-var kue = require('kue')
-var jobs = kue.createQueue({redis: config.redis})
 var getIP = require('../lib/get_ip')
+var zmq = require('zmq')
+var socket = zmq.socket('req')
 var ip = getIP()
 
 db(function(err, db){
@@ -23,11 +22,27 @@ db(function(err, db){
 
   var TestSummary = db.collection('test_summary')
   TestSummary.find().toArray(function(err, testSummary){
+    socket.connect('tcp://' + config.zeromq_master + ':8001')
 
-    jobs.process('module', 2, function(job, done){
-      var module = job.data.module
-      processModule(module, testSummary, done)
+    socket.send(JSON.stringify({type: 'new'}))
+    socket.on('message', function(msg){
+      console.log('Got message ' + msg)
+      msg = JSON.parse('' + msg)
+      if (msg.type === 'module'){
+        processModule(msg.module, testSummary, function(err, result){
+          socket.send(JSON.stringify({
+            type: 'result',
+            module: msg.module,
+            value: result
+          }))
+        })
+      }else if (msg.type === 'end'){
+        db.close()
+        console.log('Done')
+        process.exit()
+      }
     })
+
   })  
 
 })
