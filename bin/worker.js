@@ -29,9 +29,9 @@ db(function(err, db){
       id: ip
     }))
     socket.on('message', function(msg){
-      console.log('Got message ' + msg)
       msg = JSON.parse('' + msg)
       if (msg.type === 'module'){
+        console.log('Processing ' + msg.module)
         processModule(msg.module, testSummary, function(err, result){
           socket.send(JSON.stringify({
             type: 'result',
