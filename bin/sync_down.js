@@ -38,7 +38,7 @@ db(function(err, db){
         console.log(app.pending.length + ' modules to process.')
         initializeSocket(writeQueue)
         startMonitoring()
-        saveLastSeq(lastSeq)
+        saveLastSeq(db, lastSeq)
       })
   })
 })
@@ -69,7 +69,7 @@ function getLastSeq(db, callback){
   })
 }
 
-function saveLastSeq(db, callback){
+function saveLastSeq(db, lastSeq, callback){
   var LastSeq = db.collection('last_seq')
   LastSeq.update(
     {_id: 1}, 
@@ -144,8 +144,7 @@ function startMonitoring(){
     app.rollingCompleteCounts.push(completeCount)
     var rate = ((app.rollingCompleteCounts.last() - app.rollingCompleteCounts.first()) / 10).toFixed(1)
     var totalRate = (completeCount * 1000 / (new Date().getTime() - app.startTime)).toFixed(1)
-    process.stdout.write(
-      '\r' + 
+    console.log(
       'pending ' + app.pending.length + 
       ', active ' + Object.keys(app.active).length + 
       ', complete ' + completeCount +
