@@ -150,7 +150,7 @@ function startMonitoring(){
   setInterval(function(){
     var completeCount = app.complete.length
     app.rollingCompleteCounts.push(completeCount)
-    var rate = (app.rollingCompleteCounts.last() - app.rollingCompleteCounts.first()).toFixed(1)
+    var rate = ((app.rollingCompleteCounts.last() - app.rollingCompleteCounts.first()) / 10).toFixed(1)
     var totalRate = (completeCount * 1000 / (new Date().getTime() - app.startTime)).toFixed(1)
     console.log(
       'pending ' + app.pending.length + 
