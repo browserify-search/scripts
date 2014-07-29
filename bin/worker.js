@@ -55,6 +55,12 @@ db(function(err, db){
 })
 
 function processModule(module, testSummary, done){
+  setTimeout(function(){
+    done(null, {})
+  }, 1000)
+
+  return
+
   getModuleInfo(module, function(err, info){
     if (err){
       return done(null, {
