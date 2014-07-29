@@ -9,6 +9,7 @@ var config = require('../config.json')
 var url = config.npm_api + '/_changes'
 var _ = require('lodash')
 var zmq = require('zmq')
+var replify = require('replify')
 
 var app = {
   startTime: null,
@@ -19,6 +20,8 @@ var app = {
   saved: 0,
   rollingCompleteCounts: new CircularList(10)
 }
+
+replify('sync_down', app)
 
 db(function(err, db){
   if (err) return console.error(err.message)
