@@ -10,7 +10,7 @@ var url = config.npm_api + '/_changes'
 var _ = require('lodash')
 var zmq = require('zmq')
 var replify = require('replify')
-var declaredLastSeq = process.argsv[2]
+var declaredLastSeq = process.argv[2]
 
 var app = {
   startTime: null,
@@ -29,9 +29,9 @@ db(function(err, db){
 
   var writeQueue = setupWriteQueue(db)
   getLastSeq(db, function(err, prevLastSeq){
-    console.log('Previous last seq', prevLastSeq)
     var since = declaredLastSeq || prevLastSeq
     if (since){
+      console.log('Getting changes since ' + since)
       url += '?since=' + since
     }
     request(url)
