@@ -16,7 +16,7 @@ var getIP = require('../lib/get_ip')
 var zmq = require('zmq')
 var socket = zmq.socket('req')
 var ip = getIP()
-
+var concurrency = 2
 db(function(err, db){
   if (err) return console.error(err.message)
 
@@ -24,10 +24,13 @@ db(function(err, db){
   TestSummary.find().toArray(function(err, testSummary){
     socket.connect('tcp://' + config.zeromq_master + ':8001')
 
-    socket.send(JSON.stringify({
-      type: 'new',
-      id: ip
-    }))
+    for (var i = 0; i < concurrency; i++){
+      socket.send(JSON.stringify({
+        type: 'new',
+        id: ip
+      }))
+    }
+
     socket.on('message', function(msg){
       msg = JSON.parse('' + msg)
       if (msg.type === 'module'){
