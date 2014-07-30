@@ -65,14 +65,16 @@ function processModule(module, testSummary, done){
     if (err){
       return done(null, {
         _id: module,
-        invalid: true
+        invalid: true,
+        timeMeasurements: timeMeasurements
       })
     }
 
     if (!isValid(info)){
       return done(null, {
         _id: module,
-        invalid: true
+        invalid: true,
+        timeMeasurements: timeMeasurements
       })
     }
     var version = info['dist-tags'].latest
