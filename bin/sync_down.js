@@ -19,7 +19,13 @@ var app = {
   active: {},
   complete: [],
   saved: 0,
-  rollingCompleteCounts: new CircularList(10)
+  rollingCompleteCounts: new CircularList(10),
+  rollingModuleInfoTimes: new CircularList(10),
+  rollingInstallTimes: new CircularList(10),
+  rollingBundleTimes: new CircularList(10),
+  rollingBrowserifiabilityTimes: new CircularList(10),
+  rollingRimrafTimes: new CircularList(10),
+  rollingProcessingTimes: new CircularList(10)
 }
 
 replify('sync_down', app)
@@ -120,6 +126,8 @@ function initializeSocket(writeQueue){
         delete app.active[msg.module]
         app.complete.push(msg)
         writeQueue.push(msg.value)
+        updateTimeMeasurementAverages(msg.value.timeMeasurements)
+
         dispatchJob(msg.id)
       }
     })
@@ -146,12 +154,21 @@ function initializeSocket(writeQueue){
   }
 }
 
+function updateTimeMeasurementAverages(timeMeasurements){
+  app.rollingModuleInfoTimes.push(timeMeasurements.moduleInfo)
+  app.rollingInstallTimes.push(timeMeasurements.install)
+  app.rollingBundleTimes.push(timeMeasurements.bundle)
+  app.rollingBrowserifiabilityTimes.push(timeMeasurements.browserifiability)
+  app.rollingRimrafTimes.push(timeMeasurements.rimraf)
+  app.rollingProcessingTimes.push(timeMeasurements.all)
+}
+
 function startMonitoring(){
   setInterval(function(){
     var completeCount = app.complete.length
     app.rollingCompleteCounts.push(completeCount)
     var rate = ((app.rollingCompleteCounts.last() - 
-      app.rollingCompleteCounts.first()) / 100).toFixed(1)
+      app.rollingCompleteCounts.first()) / 10).toFixed(1)
     var totalRate = (completeCount * 1000 / 
       (new Date().getTime() - app.startTime)).toFixed(1)
     console.log(
@@ -160,5 +177,24 @@ function startMonitoring(){
       ', complete ' + completeCount +
       ', rt ' + rate +
       ', trt ' + totalRate)
-  }, 10000)
+
+    console.log(
+      '  module info ' + average(app.rollingModuleInfoTimes) +
+      ', install ' + average(app.rollingInstallTimes) +
+      ', bundle ' + average(app.rollingBundleTimes) +
+      ', browserifiability ' + average(app.rollingBrowserifiabilityTimes) + 
+      ', rimraf ' + average(app.rollingRimrafTimes) +
+      ', total ' + average(app.rollingProcessingTimes))
+
+  }, 1000)
+}
+
+function average(arr){
+  var sum = 0
+  var count = 0
+  arr.forEach(function(n){
+    sum += n
+    count++
+  })
+  return sum / count
 }

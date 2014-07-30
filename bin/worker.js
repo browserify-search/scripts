@@ -14,6 +14,7 @@ var debug = require('debug')('worker')
 var rimraf = require('rimraf')
 var getIP = require('../lib/get_ip')
 var zmq = require('zmq')
+var extend = require('util')._extend
 var socket = zmq.socket('req')
 var ip = getIP()
 var concurrency = 1
@@ -56,8 +57,11 @@ db(function(err, db){
 })
 
 function processModule(module, testSummary, done){
-
+  var timeMeasurements = {}
+  var startAll, start, end
+  startAll = start = +new Date
   getModuleInfo(module, function(err, info){
+    timeMeasurements.moduleInfo = new Date - start
     if (err){
       return done(null, {
         _id: module,
@@ -74,7 +78,8 @@ function processModule(module, testSummary, done){
     var version = info['dist-tags'].latest
     var search = searchInfo(info)
     var features = easyFeatures(info)
-    testModule(module, dir, function(err, results){
+    testModule(module, dir, function(err, results, testTimeMeasurements){
+      extend(timeMeasurements, testTimeMeasurements)
       if (err){
         console.error(module, err.message)
         finish()
@@ -86,10 +91,13 @@ function processModule(module, testSummary, done){
         version: version,
         search: search,
         features: features,
-        testResults: results
+        testResults: results,
+        timeMeasurements: timeMeasurements
       }
 
+      start = +new Date
       browserifiability(results, testSummary, function(err, browserifiability){
+        timeMeasurements.browserifiability = new Date - start
         if (err){
           results.browserifiability = {
             error: err.message
@@ -102,7 +110,10 @@ function processModule(module, testSummary, done){
       })
 
       function finish(){
+        start = +new Date
         rimraf(path.join(dir, module), function(){
+          timeMeasurements.rimraf = new Date - start
+          timeMeasurements.all = new Date - startAll
           done(null, results)
         })
       }
