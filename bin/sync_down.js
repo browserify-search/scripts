@@ -155,11 +155,11 @@ function initializeSocket(writeQueue){
 }
 
 function updateTimeMeasurementAverages(timeMeasurements){
-  app.rollingModuleInfoTimes.push(timeMeasurements.moduleInfo)
-  app.rollingInstallTimes.push(timeMeasurements.install)
-  app.rollingBundleTimes.push(timeMeasurements.bundle)
-  app.rollingBrowserifiabilityTimes.push(timeMeasurements.browserifiability)
-  app.rollingRimrafTimes.push(timeMeasurements.rimraf)
+  app.rollingModuleInfoTimes.push(timeMeasurements.moduleInfo || 0)
+  app.rollingInstallTimes.push(timeMeasurements.install || 0)
+  app.rollingBundleTimes.push(timeMeasurements.bundle || 0)
+  app.rollingBrowserifiabilityTimes.push(timeMeasurements.browserifiability || 0)
+  app.rollingRimrafTimes.push(timeMeasurements.rimraf || 0)
   app.rollingProcessingTimes.push(timeMeasurements.all)
 }
 

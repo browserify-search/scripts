@@ -63,6 +63,7 @@ function processModule(module, testSummary, done){
   getModuleInfo(module, function(err, info){
     timeMeasurements.moduleInfo = new Date - start
     if (err){
+      timeMeasurements.all = new Date - startAll
       return done(null, {
         _id: module,
         invalid: true,
@@ -71,6 +72,7 @@ function processModule(module, testSummary, done){
     }
 
     if (!isValid(info)){
+      timeMeasurements.all = new Date - startAll
       return done(null, {
         _id: module,
         invalid: true,
