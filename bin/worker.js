@@ -17,7 +17,7 @@ var zmq = require('zmq')
 var extend = require('util')._extend
 var socket = zmq.socket('req')
 var ip = getIP()
-var concurrency = 1
+var concurrency = 4
 
 db(function(err, db){
   if (err) return console.error(err.message)
