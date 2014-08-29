@@ -56,8 +56,8 @@ db(function(err, db){
         TestSummary.find().toArray(function(err, testSummary){
           if (err) return console.error(err.message)
           initializeSocket(writeQueue, testSummary)
-          //startMonitoring()
-          //saveLastSeq(db, lastSeq)
+          startMonitoring()
+          saveLastSeq(db, lastSeq)
         })
         
       })
