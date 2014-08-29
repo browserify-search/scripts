@@ -35,6 +35,8 @@ db(function(err, db){
 
   var writeQueue = setupWriteQueue(db)
   getLastSeq(db, function(err, prevLastSeq){
+    if (err) return console.error(err.message)
+
     var since = declaredLastSeq || prevLastSeq
     if (since){
       console.log('Getting changes since ' + since)
@@ -50,9 +52,14 @@ db(function(err, db){
         app.pending = moduleNames(changes)
 
         console.log(app.pending.length + ' modules to process.')
-        initializeSocket(writeQueue)
-        startMonitoring()
-        saveLastSeq(db, lastSeq)
+        var TestSummary = db.collection('test_summary')
+        TestSummary.find().toArray(function(err, testSummary){
+          if (err) return console.error(err.message)
+          initializeSocket(writeQueue, testSummary)
+          //startMonitoring()
+          //saveLastSeq(db, lastSeq)
+        })
+        
       })
   })
 })
@@ -110,7 +117,7 @@ function setupWriteQueue(db){
   })
 }
 
-function initializeSocket(writeQueue){
+function initializeSocket(writeQueue, testSummary){
   var socket = zmq.socket('rep')
   socket.bind('tcp://' + config.zeromq_master + ':8001', function(err){
     if (err){
@@ -120,7 +127,12 @@ function initializeSocket(writeQueue){
 
     socket.on('message', function(msg){
       msg = JSON.parse('' + msg)
-      if (msg.type === 'new'){
+      if (msg.type === 'get_test_summary'){
+        socket.send(JSON.stringify({
+          type: 'test_summary',
+          value: testSummary
+        }))
+      }else if (msg.type === 'new'){
         dispatchJob(msg.id)
       }else if (msg.type === 'result'){
         delete app.active[msg.module]

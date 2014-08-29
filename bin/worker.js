@@ -1,7 +1,6 @@
 #! /usr/bin/env node
 
 var async = require('async')
-var db = require('../lib/db')
 var path = require('path')
 var config = require('../config.json')
 var testModule = require('../lib/test_module')
@@ -19,44 +18,48 @@ var socket = zmq.socket('req')
 var ip = getIP()
 var concurrency = 1
 
-db(function(err, db){
-  if (err) return console.error(err.message)
+socket.connect('tcp://' + config.zeromq_master + ':8001')
 
-  var TestSummary = db.collection('test_summary')
-  TestSummary.find().toArray(function(err, testSummary){
-    socket.connect('tcp://' + config.zeromq_master + ':8001')
+socket.send(JSON.stringify({
+  type: 'get_test_summary',
+  id: ip
+}))
 
-    for (var i = 0; i < concurrency; i++){
-      socket.send(JSON.stringify({
-        type: 'new',
-        id: ip
-      }))
-    }
-
-    socket.on('message', function(msg){
-      msg = JSON.parse('' + msg)
-      if (msg.type === 'module'){
-        console.log('Processing ' + msg.module)
-        processModule(msg.module, testSummary, function(err, result){
-          socket.send(JSON.stringify({
-            type: 'result',
-            module: msg.module,
-            id: ip,
-            value: result
-          }))
-        })
-      }else if (msg.type === 'end'){
-        db.close()
-        console.log('Done')
-        process.exit()
-      }
-    })
-
-  })  
-
+socket.once('message', function(msg){
+  msg = JSON.parse('' + msg)
+  if (msg.type === 'test_summary'){
+    start(msg.value)
+  }
 })
 
+function start(testSummary){
+  for (var i = 0; i < concurrency; i++){
+    socket.send(JSON.stringify({
+      type: 'new',
+      id: ip
+    }))
+  }
+
+  socket.on('message', function(msg){
+    msg = JSON.parse('' + msg)
+    if (msg.type === 'module'){
+      processModule(msg.module, testSummary, function(err, result){
+        socket.send(JSON.stringify({
+          type: 'result',
+          module: msg.module,
+          id: ip,
+          value: result
+        }))
+      })
+    }else if (msg.type === 'end'){
+      console.log('Done')
+      process.exit()
+    }
+  })
+}
+
 function processModule(module, testSummary, done){
+  console.log('Processing ' + module)
   var timeMeasurements = {}
   var startAll, start, end
   startAll = start = +new Date
