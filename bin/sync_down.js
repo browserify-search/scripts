@@ -170,7 +170,6 @@ function initializeSocket(writeQueue, testSummary, db){
         var Modules = db.collection('modules')
         Modules.findOne({_id: module}, function(err, moduleDoc){
           if (!moduleDoc || moduleDoc.rev !== job.rev){
-            console.log('dispatching', module)
             app.active[module] = worker
             socket.send(JSON.stringify({
               type: 'module',
@@ -178,7 +177,6 @@ function initializeSocket(writeQueue, testSummary, db){
               rev: job.rev
             }))
           }else{
-            console.log('skipping', module)
             process.nextTick(tryDispatchNext)
           }
         })
