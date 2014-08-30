@@ -49,14 +49,14 @@ db(function(err, db){
         var changes = JSON.parse(reply.text)
         var lastSeq = changes.last_seq
         console.log('New last seq', lastSeq)
-        app.pending = moduleNames(changes)
+        app.pending = jobsFromChanges(changes)
 
         console.log(app.pending.length + ' modules to process.')
         var TestSummary = db.collection('test_summary')
         TestSummary.find().toArray(function(err, testSummary){
           if (err) return console.error(err.message)
-          initializeSocket(writeQueue, testSummary)
-          startMonitoring()
+          initializeSocket(writeQueue, testSummary, db)
+          //startMonitoring()
           saveLastSeq(db, lastSeq)
         })
         
@@ -64,12 +64,17 @@ db(function(err, db){
   })
 })
 
-function moduleNames(changes){
-  return _.uniq(changes.results
-    .map(function(r){ return r.id })
-    .filter(function(m){
-      return m.substring(0, 8) !== '_design/'
-    }))
+function jobsFromChanges(changes){
+  return changes.results
+    .filter(function(result){
+      return result.id.substring(0, 8) !== '_design/'
+    })
+    .map(function(result){
+      return {
+        module: result.id,
+        rev: result.changes[0].rev
+      }
+    })
 }
 
 function showActive(active){
@@ -117,7 +122,7 @@ function setupWriteQueue(db){
   })
 }
 
-function initializeSocket(writeQueue, testSummary){
+function initializeSocket(writeQueue, testSummary, db){
   var socket = zmq.socket('rep')
   socket.bind('tcp://' + config.zeromq_master + ':8001', function(err){
     if (err){
@@ -149,19 +154,35 @@ function initializeSocket(writeQueue, testSummary){
     if (app.startTime == null){
       app.startTime = new Date().getTime()
     }
-    var module = app.pending.pop()
-    if (module){
-      app.active[module] = worker
-      socket.send(JSON.stringify({
-        type: 'module',
-        module: module
-      }))
-    }else{
-      socket.send(JSON.stringify({
-        type: 'end'
-      }))
-      console.log('All done.')
-      process.exit()
+
+    tryDispatchNext()
+
+    function tryDispatchNext(){
+      var job = app.pending.pop()
+      if (!job){
+        socket.send(JSON.stringify({
+          type: 'end'
+        }))
+        console.log('All done.')
+        process.exit()
+      }else{
+        var module = job.module
+        var Modules = db.collection('modules')
+        Modules.findOne({_id: module}, function(err, moduleDoc){
+          if (!moduleDoc || moduleDoc.rev !== job.rev){
+            console.log('dispatching', module)
+            app.active[module] = worker
+            socket.send(JSON.stringify({
+              type: 'module',
+              module: module,
+              rev: job.rev
+            }))
+          }else{
+            console.log('skipping', module)
+            process.nextTick(tryDispatchNext)
+          }
+        })
+      }
     }
   }
 }

@@ -44,6 +44,7 @@ function start(testSummary){
     msg = JSON.parse('' + msg)
     if (msg.type === 'module'){
       processModule(msg.module, testSummary, function(err, result){
+        result.rev = msg.rev
         socket.send(JSON.stringify({
           type: 'result',
           module: msg.module,
