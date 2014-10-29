@@ -6,7 +6,7 @@ var getIP = require('../lib/get_ip')
 var zmq = require('zmq')
 var socket = zmq.socket('req')
 var ip = getIP()
-var concurrency = 1
+var concurrency = 2
 
 socket.connect('tcp://' + config.zeromq_master + ':8001')
 
