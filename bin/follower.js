@@ -21,6 +21,10 @@ cmdLn(function(since){
         handler: function(data, callback){
           var module = data.json._id
           var seq = data.seq
+          if (!module){
+            console.error('module def with no _id', data)
+            callback()
+          }
           processModule(module, testSummary, function(err, results){
             if (err) return callback(err)
             Modules.update(
