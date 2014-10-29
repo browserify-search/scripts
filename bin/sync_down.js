@@ -166,20 +166,12 @@ function initializeSocket(writeQueue, testSummary, db){
         console.log('All done.')
         process.exit()
       }else{
-        var module = job.module
-        var Modules = db.collection('modules')
-        Modules.findOne({_id: module}, function(err, moduleDoc){
-          if (!moduleDoc || moduleDoc.rev !== job.rev){
-            app.active[module] = worker
-            socket.send(JSON.stringify({
-              type: 'module',
-              module: module,
-              rev: job.rev
-            }))
-          }else{
-            process.nextTick(tryDispatchNext)
-          }
-        })
+        socket.send(JSON.stringify({
+          type: 'module',
+          module: job.module,
+          rev: job.rev
+        }))
+        app.active[job.module] = worker
       }
     }
   }
