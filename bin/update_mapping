@@ -1,7 +1,7 @@
 #! /bin/bash
 
-curl -XDELETE http://forum.atlantajavascript.com:9200/browserify-search/
-curl -XPUT http://forum.atlantajavascript.com:9200/browserify-search/ -d '
+curl -XDELETE http://127.0.0.1:9200/browserify-search/
+curl -XPUT http://127.0.0.1:9200/browserify-search/ -d '
 {
   "mappings": {
     "module": {
