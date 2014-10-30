@@ -10,6 +10,7 @@ cmdLn(function(mode){
     var Modules = db.collection('modules')
     var count = 0
     var q = async.queue(function(module, done){
+      console.log('Fetching ' + module)
       request('https://api.npmjs.org/downloads/point/last-month/' + module)
         .end(function(err, reply){
           err = err || reply.error
@@ -37,11 +38,11 @@ cmdLn(function(mode){
     if (mode === 'all'){
       query = {}
     }else if (mode === 'missing'){
-      query = {downloadsLastMonth: {$exists: true}}
+      query = {downloadsLastMonth: {$exists: false}}
     }else{
       throw new Error('Unknown mode: ' + mode)
     }
-    Modules.find(query, {name: true}).each(function(err, module){
+    Modules.find(query).each(function(err, module){
       if (module == null) return
       q.push(module._id)
     })
