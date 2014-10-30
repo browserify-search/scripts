@@ -4,29 +4,26 @@ var db = require('../lib/db')
 var request = require('superagent')
 var async = require('async')
 var cmdLn = require('cmd-ln')
+var getDownloadCount = require('../lib/get_download_count')
 
 cmdLn(function(mode){
   db(function(err, db){
     var Modules = db.collection('modules')
     var count = 0
     var q = async.queue(function(module, done){
-      console.log('Fetching ' + module)
-      request('https://api.npmjs.org/downloads/point/last-month/' + module)
-        .end(function(err, reply){
-          err = err || reply.error
-          if (err) return done(err)
-          var info = reply.body
-          Modules.update({_id: module},
-            {$set: {downloadsLastMonth: 
-              {start: info.start, count: info.downloads}}
-            }, function(err){
-              if (err) return done(err)
-              //console.log('Saved download counts for', module)
-              process.stdout.write('.')
-              count++
-              done()
-            })
-        })
+      getDownloadCount(module, function(err, info){
+        if (err) return done(err)
+        Modules.update({_id: module},
+          {$set: {downloadsLastMonth: 
+            {start: info.start, count: info.downloads}}
+          }, function(err){
+            if (err) return done(err)
+            //console.log('Saved download counts for', module)
+            process.stdout.write('.')
+            count++
+            done()
+          })
+      })
     }, 100)
 
     q.drain = function() {

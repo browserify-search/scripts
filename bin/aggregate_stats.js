@@ -11,6 +11,7 @@ db(function(err, db){
     mapReduce(db, prop, next)
   }, function(err, results){
     if (err) return console.error(err.message)
+    console.log('results', results)
     var allStats = mergeResults(results)
     console.log(allStats)
     var moduleStats = db.collection('moduleStats')
