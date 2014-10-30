@@ -16,7 +16,7 @@ db(function(err, db){
   ModuleStats.findOne({_id: 1}, function(err, stats){
     if (err) return console.error(err.message)
     
-    var info = stats['downloadsLastMonth.count']
+    var info = stats['downloadsLastMonth']
     var dist = gaussian(info.avg, info.variance)
     var allQueued = false
 

@@ -5,7 +5,7 @@ var db = require('../lib/db')
 
 db(function(err, db){
   var props = [
-    'downloadsLastMonth.count'
+    'downloadsLastMonth'
   ]
   async.mapSeries(props, function(prop, next){
     mapReduce(db, prop, next)
@@ -62,9 +62,11 @@ function mapReduce(db, prop, callback){
 
 // Adapted from <https://gist.github.com/RedBeard0531/1886960>
 
+
+
 function map(prop){
   return "function map() {\
-    var value = this." + prop + ";\n\
+    var value = this." + prop + ".count;\n\
     emit(1, {\n\
       sum: value,\n\
       min: value,\n\
