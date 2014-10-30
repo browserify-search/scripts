@@ -34,13 +34,10 @@ cmdLn(function(mode){
       db.close()
     }
 
-    var query
-    if (mode === 'all'){
-      query = {}
-    }else if (mode === 'missing'){
-      query = {downloadsLastMonth: {$exists: false}}
-    }else{
-      throw new Error('Unknown mode: ' + mode)
+    var query = {'testResults.browserify.bundle.passed': true}
+
+    if (mode === 'missing'){
+      query.downloadsLastMonth = {$exists: false}
     }
     Modules.find(query).each(function(err, module){
       if (module == null) return
