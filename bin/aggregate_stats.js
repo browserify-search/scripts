@@ -46,6 +46,7 @@ function mapReduce(db, prop, callback){
     map(prop),
     reduce,
     {
+      query: {'testResults.browserify.bundle.passed': true},
       finalize: finalize,
       out: { inline: 1 }
     },
@@ -62,13 +63,13 @@ function mapReduce(db, prop, callback){
 
 function map(prop){
   return "function map() {\
-    var value = this." + prop + "\n\
-    emit(1, {\
-      sum: value,\
-      min: value,\
-      max: value,\
-      count:1,\
-      diff: 0\
+    var value = this." + prop + ";\n\
+    emit(1, {\n\
+      sum: value,\n\
+      min: value,\n\
+      max: value,\n\
+      count:1,\n\
+      diff: 0\n\
     })\
   }"
 }
