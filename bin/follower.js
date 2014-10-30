@@ -23,7 +23,7 @@ cmdLn(function(since){
           var seq = data.seq
           if (!module){
             console.error('module def with no _id', data)
-            callback()
+            return callback()
           }
           processModule(module, testSummary, function(err, results){
             if (err) return callback(err)
