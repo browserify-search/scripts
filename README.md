@@ -22,3 +22,7 @@ Browserifiability
 ## Monthly
 
 * bin/update_download_counts.js ~ 1 hour
+
+## Data Snapshots
+
+* <https://www.dropbox.com/sh/5cqeb8xj4z35w6l/AAAp5QSiQT00b_KergLyowkma?dl=0>
