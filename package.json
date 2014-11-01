@@ -24,6 +24,8 @@
     "event-stream": "^3.1.5",
     "follow-registry": "0.0.3",
     "gaussian": "^1.0.0",
+    "get-my-ip": "0.0.1",
+    "getip": "0.0.1",
     "indent": "0.0.1",
     "is-type": "0.0.1",
     "jsdom": "^0.10.5",

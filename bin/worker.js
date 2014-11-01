@@ -2,7 +2,7 @@
 
 var config = require('../config.json')
 var processModule = require('../lib/process_module')
-var getIP = require('../lib/get_ip')
+var getIP = require('get-my-ip')
 var zmq = require('zmq')
 var socket = zmq.socket('req')
 var ip = getIP()

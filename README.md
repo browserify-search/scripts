@@ -40,3 +40,7 @@ To import
 ```
 bin/bulk_insert_elasticsearch.js ~/Dropbox/browserify-search/modules.json ~/Dropbox/browserify-search/moduleStats.json | curl -s -XPOST localhost:9200/browserify-search/module/_bulk --data-binary @-
 ```
+
+```
+bin/bulk_insert_elasticsearch_from_db.js | curl -s -XPOST localhost:9200/browserify-search/module/_bulk --data-binary @-
+```
