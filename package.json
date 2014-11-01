@@ -18,6 +18,7 @@
     "cmd-ln": "~0.1.0",
     "colors": "^0.6.2",
     "concat-stream": "^1.4.5",
+    "core-deps": "0.0.1",
     "csv-parse": "0.0.4",
     "debug": "^0.8.0",
     "es": "^0.4.4",
