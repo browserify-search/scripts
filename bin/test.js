@@ -9,14 +9,10 @@ cmdLn(function(module){
   db(function(err, db){
     if (err) return console.error(err.message)
 
-    var TestSummary = db.collection('test_summary')
-    TestSummary.find().toArray(function(err, testSummary){
+    processModule(module, function(err, results){
       if (err) return console.error(err.message)
-      processModule(module, testSummary, function(err, results){
-        if (err) return console.error(err.message)
-        console.log(results)
-        db.close()
-      })
+      console.log(results)
+      db.close()
     })
   })
 

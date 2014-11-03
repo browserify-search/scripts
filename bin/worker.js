@@ -10,19 +10,9 @@ var concurrency = 2
 
 socket.connect('tcp://' + config.zeromq_master + ':8001')
 
-socket.send(JSON.stringify({
-  type: 'get_test_summary',
-  id: ip
-}))
+start()
 
-socket.once('message', function(msg){
-  msg = JSON.parse('' + msg)
-  if (msg.type === 'test_summary'){
-    start(msg.value)
-  }
-})
-
-function start(testSummary){
+function start(){
   for (var i = 0; i < concurrency; i++){
     socket.send(JSON.stringify({
       type: 'new',
@@ -33,7 +23,7 @@ function start(testSummary){
   socket.on('message', function(msg){
     msg = JSON.parse('' + msg)
     if (msg.type === 'module'){
-      processModule(msg.module, testSummary, function(err, result){
+      processModule(msg.module, function(err, result){
         result.rev = msg.rev
         socket.send(JSON.stringify({
           type: 'result',

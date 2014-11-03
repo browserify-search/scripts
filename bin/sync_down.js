@@ -52,13 +52,9 @@ db(function(err, db){
         app.pending = jobsFromChanges(changes)
 
         console.log(app.pending.length + ' modules to process.')
-        var TestSummary = db.collection('test_summary')
-        TestSummary.find().toArray(function(err, testSummary){
-          if (err) return console.error(err.message)
-          initializeSocket(writeQueue, testSummary, db)
-          startMonitoring()
-          saveLastSeq(db, lastSeq)
-        })
+        initializeSocket(writeQueue, db)
+        startMonitoring()
+        saveLastSeq(db, lastSeq)
         
       })
   })
@@ -122,7 +118,7 @@ function setupWriteQueue(db){
   })
 }
 
-function initializeSocket(writeQueue, testSummary, db){
+function initializeSocket(writeQueue, db){
   var socket = zmq.socket('rep')
   socket.bind('tcp://' + config.zeromq_master + ':8001', function(err){
     if (err){
@@ -132,12 +128,7 @@ function initializeSocket(writeQueue, testSummary, db){
 
     socket.on('message', function(msg){
       msg = JSON.parse('' + msg)
-      if (msg.type === 'get_test_summary'){
-        socket.send(JSON.stringify({
-          type: 'test_summary',
-          value: testSummary
-        }))
-      }else if (msg.type === 'new'){
+      if (msg.type === 'new'){
         dispatchJob(msg.id)
       }else if (msg.type === 'result'){
         delete app.active[msg.module]
