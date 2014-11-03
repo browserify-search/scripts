@@ -11,7 +11,6 @@ cmdLn(function(mode){
     var Modules = db.collection('modules')
     var count = 0
     var q = async.queue(function(module, done){
-      console.log('getting counts for', module)
       getDownloadCount(module, function(err, info){
         if (err) return done(err)
         Modules.update({_id: module},
