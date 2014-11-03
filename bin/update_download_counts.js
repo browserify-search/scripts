@@ -4,7 +4,7 @@ var db = require('../lib/db')
 var request = require('superagent')
 var async = require('async')
 var cmdLn = require('cmd-ln')
-var getDownloadCount = require('../lib/get_download_count')
+var getDownloadCount = require('../lib/process_module/get_download_count')
 
 cmdLn(function(mode){
   db(function(err, db){
