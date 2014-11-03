@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-var processModule = require('../lib/process_module')
+var processModule = require('process-module')
 var db = require('../lib/db')
 var cmdLn = require('cmd-ln')
 

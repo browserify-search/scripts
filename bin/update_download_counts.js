@@ -4,13 +4,14 @@ var db = require('../lib/db')
 var request = require('superagent')
 var async = require('async')
 var cmdLn = require('cmd-ln')
-var getDownloadCount = require('../lib/process_module/get_download_count')
+var getDownloadCount = require('process-module/get_download_count')
 
 cmdLn(function(mode){
   db(function(err, db){
     var Modules = db.collection('modules')
     var count = 0
     var q = async.queue(function(module, done){
+      console.log('getting counts for', module)
       getDownloadCount(module, function(err, info){
         if (err) return done(err)
         Modules.update({_id: module},

@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 var follow = require('follow-registry')
-var processModule = require('../lib/process_module')
+var processModule = require('process-module')
 var db = require('../lib/db')
 var cmdLn = require('cmd-ln')
 var fs = require('fs')
@@ -23,7 +23,9 @@ cmdLn(function(since){
           console.error('module def with no _id', data)
           return callback()
         }
+        console.log('Processing', module)
         processModule(module, function(err, results){
+          console.log(module, 'results', results)
           if (err) return callback(err)
           Modules.update(
             {_id: module},

@@ -37,6 +37,7 @@
     "natural": "^0.1.27",
     "npm": "git://github.com/airportyh/npm",
     "npmlog": "0.0.6",
+    "process-module": "git://github.com/browserify-search/process-module",
     "queue": "^2.2.0",
     "replify": "^1.2.0",
     "request": "^2.36.0",

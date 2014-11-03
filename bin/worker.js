@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 var config = require('../config.json')
-var processModule = require('../lib/process_module')
+var processModule = require('process-module')
 var getIP = require('get-my-ip')
 var zmq = require('zmq')
 var socket = zmq.socket('req')
