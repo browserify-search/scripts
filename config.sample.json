@@ -1,7 +1,7 @@
 {
-  "mongo": "mongodb:some.db.com",
-  "npm_api": "http://some.npm.com/registry",
-  "npm_registry": "http://some.npm.com/registry/_design/scratch/_rewrite"
-  "zmq_master": "<some.ip.address>",
-  "elastic_search": "http://some.elasticsearch.instance.com/"
+  "mongo": "mongodb://127.0.0.1:27017/browserify-search",
+  "npm_api": "http://skimdb.npmjs.com/registry",
+  "npm_registry": "http://registry.npmjs.org",
+  "zeromq_master": "127.0.0.1",
+  "elastic_search": "http://127.0.0.1:9200"
 }
