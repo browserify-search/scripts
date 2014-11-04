@@ -38,9 +38,7 @@ Sixth column:
 
 * [www](https://github.com/browserify-search/www) - implements the module search engine website
 
-## The Scripts
-
-### Processing Modules
+## Processing Modules
 
 * `./follower.js` - this script runs continuously in the background of the web server, tracking changes in the main npm registry using [follow-registry](https://www.npmjs.org/package/follow-registry). As soon as a module is published, in runs `process-module` to process it.
 * `./dispatcher.js` and `worker.js` - this pair of scripts enable distributed parallel processing of npm modules. `dispatcher.js` will be started from the web server (with the mongodb instance), while `worker.js` will be started on any number of worker machines. The communicate via zero mq and all results will be saved to the mongodb instance.
