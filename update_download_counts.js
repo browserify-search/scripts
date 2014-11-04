@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-var db = require('../lib/db')
+var db = require('./lib/db')
 var request = require('superagent')
 var async = require('async')
 var cmdLn = require('cmd-ln')

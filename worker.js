@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-var config = require('../config.json')
+var config = require('./config.json')
 var processModule = require('process-module')
 var getIP = require('get-my-ip')
 var zmq = require('zmq')

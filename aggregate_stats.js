@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 var async = require('async')
-var db = require('../lib/db')
+var db = require('./lib/db')
 
 db(function(err, db){
   var props = [

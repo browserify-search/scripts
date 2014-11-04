@@ -4,7 +4,7 @@ var fs = require('fs')
 var ldj = require('ldjson-stream')
 var cmdLn = require('cmd-ln')
 var gaussian = require('gaussian')
-var elasticSearchBulkInsertTransform = require('../lib/elasticsearch_bulk_insert_transform')
+var elasticSearchBulkInsertTransform = require('./lib/elasticsearch_bulk_insert_transform')
 
 cmdLn(function(modulesPath, moduleStatsPath){
 

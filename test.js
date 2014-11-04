@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 var processModule = require('process-module')
-var db = require('../lib/db')
+var db = require('./lib/db')
 var cmdLn = require('cmd-ln')
 
 cmdLn(function(module){

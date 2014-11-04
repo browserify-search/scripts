@@ -3,9 +3,9 @@
 var request = require('superagent')
 var async = require('async')
 var os = require('os')
-var db = require('../lib/db')
+var db = require('./lib/db')
 var CircularList = require('CBuffer')
-var config = require('../config.json')
+var config = require('./config.json')
 var url = config.npm_api + '/_changes'
 var _ = require('lodash')
 var zmq = require('zmq')

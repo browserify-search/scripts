@@ -4,8 +4,8 @@ var fs = require('fs')
 var ldj = require('ldjson-stream')
 var cmdLn = require('cmd-ln')
 var gaussian = require('gaussian')
-var db = require('../lib/db')
-var elasticSearchBulkInsertTransform = require('../lib/elasticsearch_bulk_insert_transform')
+var db = require('./lib/db')
+var elasticSearchBulkInsertTransform = require('./lib/elasticsearch_bulk_insert_transform')
 
 db(function(err, db){
   if (err) return console.error(err.message)
