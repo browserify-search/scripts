@@ -11,7 +11,7 @@ cmdLn(function(module){
 
     processModule(module, function(err, results){
       if (err) return console.error(err.message)
-      console.log(results)
+      console.log(JSON.stringify(results, null, '  '))
       db.close()
     })
   })

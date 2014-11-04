@@ -19,7 +19,6 @@
     "ldjson-stream": "^1.2.1",
     "lodash": "^2.4.1",
     "mongodb": "^1.4.2",
-    "npm": "git://github.com/airportyh/npm",
     "process-module": "git://github.com/browserify-search/process-module",
     "replify": "^1.2.0",
     "superagent": "^0.18.0",
