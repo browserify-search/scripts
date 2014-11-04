@@ -65,7 +65,7 @@ script.disable_dynamic: false
         
 * `bulk_insert_elasticsearch_from_files.js` - instead of reading from mongodb, you can instead read from a mongodb data dump with this script. Get the [data dump files](https://www.dropbox.com/sh/5cqeb8xj4z35w6l/AAAp5QSiQT00b_KergLyowkma?dl=0), then run 
         
-        ./bulk_insert_elasticsearch_from_files.js modules.json moduleStats.json
+        ./bulk_insert_elasticsearch_from_files.js modules.json moduleStats.json | curl -s -XPOST localhost:9200/browserify-search/module/_bulk --data-binary @-
         
 
 ## Update Download Counts
