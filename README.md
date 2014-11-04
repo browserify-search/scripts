@@ -38,6 +38,17 @@ Sixth column:
 
 * [www](https://github.com/browserify-search/www) - implements the module search engine website
 
+## Develop On This
+
+Initial setup if you want to develop on this.
+
+```
+git clone git@github.com:browserify-search/scripts.git
+cd scripts
+npm install
+cp config.sample.json config.json
+```
+
 ## Processing Modules
 
 * `./follower.js` - this script runs continuously in the background of the web server, tracking changes in the main npm registry using [follow-registry](https://www.npmjs.org/package/follow-registry). As soon as a module is published, in runs `process-module` to process it.
