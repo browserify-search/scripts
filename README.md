@@ -1,9 +1,14 @@
 scripts
 =======
 
+These scripts run various processes that make browserify search work. This diagram demonstrates at a high level the data flow of the system.
+
+![Data flow chart](./diagram.png)
+
+
 ## Continuous In Background
 
-* bin/follower.js
+* `./follower.js`
 
 ## Each Time I want to add data samples to search learning algorithm
 
