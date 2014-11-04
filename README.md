@@ -43,44 +43,32 @@ Sixth column:
 ### Processing Modules
 
 * `./follower.js` - this script runs continuously in the background of the web server, tracking changes in the main npm registry using [follow-registry](https://www.npmjs.org/package/follow-registry). As soon as a module is published, in runs `process-module` to process it.
-* `./sync_down.js` and `worker.js` - the
+* `./dispatcher.js` and `worker.js` - this pair of scripts enable distributed parallel processing of npm modules. `dispatcher.js` will be started from the web server (with the mongodb instance), while `worker.js` will be started on each worker machine. The communicate via zero mq and all results will be saved to the mongodb instance.
 
-## Each Time I want to add data samples to search learning algorithm
+### Elastic Search
 
-* bin/import_test_summary
-* re-process all modules, or just update the search info for all modules - do we have a script for that?
+### Configuration
 
-## Each Time I want to tweak search params
-
-* bin/update_mapping
-* re import data into Elastic Search
-
-## Daily
-
-* bin/aggregate_stats.js ~ 4 seconds
-* bin/import_elasticsearch.js ~ 5 minutes
-
-## Monthly
-
-* bin/update_download_counts.js ~ 1 hour
-
-## Data Snapshots
-
-* <https://www.dropbox.com/sh/5cqeb8xj4z35w6l/AAAp5QSiQT00b_KergLyowkma?dl=0>
-
-Make sure you have the following settings in `elasticsearch.yml`:
+First things first, you need to [install elastic search](http://www.elasticsearch.org/). Then you need to make sure you have the following settings in `elasticsearch.yml` (usually in the `config` directory within the location where Elastic Search is installed):
 
 ```
 http.max_content_length: 1000mb
 script.disable_dynamic: false
 ```
 
-To import 
+### Updating Elastic Search
 
-```
-bin/bulk_insert_elasticsearch.js ~/Dropbox/browserify-search/modules.json ~/Dropbox/browserify-search/moduleStats.json | curl -s -XPOST localhost:9200/browserify-search/module/_bulk --data-binary @-
-```
+* `update_mapping` - this drops the data collection on elastic search (starts over) and updates the schema. You can tweak the schema prior to running if you want to tweak the search parameters to weight certain fields more than others.
+* `bulk_insert_elasticsearch_from_db.js` - this script reads from the `modules` and `moduleStats` collections in mongodb and streams a stream of line-separated json output suitable for bulk inserting into elastic search. To actually do this, you can use the command
+    ```
+    ./bulk_insert_elasticsearch_from_db.js | curl -s -XPOST localhost:9200/browserify-search/module/_bulk --data-binary @-
+    ```
+* `bulk_insert_elasticsearch_from_files.js` - instead of reading from mongodb, you can instead read from a mongodb data dump with this script. Get the [data dump files](https://www.dropbox.com/sh/5cqeb8xj4z35w6l/AAAp5QSiQT00b_KergLyowkma?dl=0), then run 
+    ```
+    ./bulk_insert_elasticsearch_from_files.js modules.json moduleStats.json
+    ```
 
-```
-bin/bulk_insert_elasticsearch_from_db.js | curl -s -XPOST localhost:9200/browserify-search/module/_bulk --data-binary @-
-```
+## Update Download Counts
+
+* `update_download_counts.js all` - updates the download counts for every module in mongodb.
+
