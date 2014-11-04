@@ -60,13 +60,13 @@ script.disable_dynamic: false
 
 * `update_mapping` - this drops the data collection on elastic search (starts over) and updates the schema. You can tweak the schema prior to running if you want to tweak the search parameters to weight certain fields more than others.
 * `bulk_insert_elasticsearch_from_db.js` - this script reads from the `modules` and `moduleStats` collections in mongodb and streams a stream of line-separated json output suitable for bulk inserting into elastic search. To actually do this, you can use the command
-    ```
-    ./bulk_insert_elasticsearch_from_db.js | curl -s -XPOST localhost:9200/browserify-search/module/_bulk --data-binary @-
-    ```
+        ```
+        ./bulk_insert_elasticsearch_from_db.js | curl -s -XPOST localhost:9200/browserify-search/module/_bulk --data-binary @-
+        ```
 * `bulk_insert_elasticsearch_from_files.js` - instead of reading from mongodb, you can instead read from a mongodb data dump with this script. Get the [data dump files](https://www.dropbox.com/sh/5cqeb8xj4z35w6l/AAAp5QSiQT00b_KergLyowkma?dl=0), then run 
-    ```
-    ./bulk_insert_elasticsearch_from_files.js modules.json moduleStats.json
-    ```
+        ```
+        ./bulk_insert_elasticsearch_from_files.js modules.json moduleStats.json
+        ```
 
 ## Update Download Counts
 
