@@ -1,3 +1,4 @@
 #! /bin/sh
 
+./update_mapping
 ./bulk_insert_elasticsearch_from_db.js | curl -s -XPOST localhost:9200/browserify-search/module/_bulk --data-binary @-
