@@ -1,7 +1,7 @@
 {
-  "name": "browserifiability",
+  "name": "scripts",
   "version": "0.0.0",
-  "description": "Test modules for browserifiability.",
+  "description": "Various scripts needed in the operation of the browserify search server.",
   "main": "npm_install.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -22,6 +22,7 @@
     "process-module": "git://github.com/browserify-search/process-module",
     "replify": "^1.2.0",
     "superagent": "^0.18.0",
-    "zmq": "^2.7.0"
+    "zmq": "^2.7.0",
+    "browserifiability": "~0.1.0"
   }
 }
