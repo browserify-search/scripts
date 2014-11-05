@@ -11,6 +11,7 @@ var _ = require('lodash')
 var zmq = require('zmq')
 var replify = require('replify')
 var declaredLastSeq = process.argv[2]
+var lastSeq = require('./lib/last_seq')
 
 var app = {
   startTime: null,
@@ -34,7 +35,7 @@ db(function(err, db){
   if (err) return console.error(err.message)
 
   var writeQueue = setupWriteQueue(db)
-  getLastSeq(db, function(err, prevLastSeq){
+  lastSeq.get(db, function(err, prevLastSeq){
     if (err) return console.error(err.message)
 
     var since = declaredLastSeq || prevLastSeq
@@ -47,14 +48,14 @@ db(function(err, db){
         err = err || reply.error
         if (err) return console.error(err.message)
         var changes = JSON.parse(reply.text)
-        var lastSeq = changes.last_seq
-        console.log('New last seq', lastSeq)
+        var seq = changes.last_seq
+        console.log('New last seq', seq)
         app.pending = jobsFromChanges(changes)
 
         console.log(app.pending.length + ' modules to process.')
         initializeSocket(writeQueue, db)
         startMonitoring()
-        saveLastSeq(db, lastSeq)
+        lastSeq.set(db, seq)
         
       })
   })
@@ -80,25 +81,6 @@ function showActive(active){
     parts.push(module + ':' + worker)
   }
   return '[' + parts.join(' ') + ']'
-}
-
-function getLastSeq(db, callback){
-  var LastSeq = db.collection('last_seq')
-  LastSeq.findOne({_id: 1}, function(err, lastSeqDoc){
-    if (err) return callback(err)
-    var lastSeq = lastSeqDoc && lastSeqDoc.last_seq
-    callback(null, lastSeq)
-  })
-}
-
-function saveLastSeq(db, lastSeq, callback){
-  var LastSeq = db.collection('last_seq')
-  LastSeq.update(
-    {_id: 1}, 
-    {$set: {last_seq: lastSeq}}, 
-    {upsert: true},
-    callback || function(){}
-  )
 }
 
 function setupWriteQueue(db){
