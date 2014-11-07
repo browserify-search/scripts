@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-var processModule = require('process-module')
+var processModule = require('brsh-process-module')
 var cmdLn = require('cmd-ln')
 var db = require('./lib/db')
 

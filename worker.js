@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 var config = require('./config.json')
-var processModule = require('process-module')
+var processModule = require('brsh-process-module')
 var getIP = require('get-my-ip')
 var zmq = require('zmq')
 var socket = zmq.socket('req')

@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 var follow = require('follow-registry')
-var processModule = require('process-module')
+var processModule = require('brsh-process-module')
 var db = require('./lib/db')
 var cmdLn = require('cmd-ln')
 var fs = require('fs')
