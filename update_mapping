@@ -41,6 +41,14 @@ curl -XPUT http://127.0.0.1:9200/browserify-search/ -d '
               "boost": 0.5
             }
           }
+        },
+        "author": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "github": {
+          "type": "string",
+          "index": "not_analyzed"
         }
       }
     }
