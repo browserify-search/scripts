@@ -21,6 +21,7 @@
     "ldjson-stream": "^1.2.1",
     "lodash": "^2.4.1",
     "mongodb": "^1.4.2",
+    "node-diskfree": "^0.1.0",
     "replify": "^1.2.0",
     "superagent": "^0.18.0",
     "zmq": "^2.7.0"

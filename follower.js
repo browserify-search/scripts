@@ -1,11 +1,13 @@
 #! /usr/bin/env node
 
 var follow = require('follow-registry')
-var processModule = require('brsh-process-module')
+var brshProcessModule = require('brsh-process-module')
 var db = require('./lib/db')
 var cmdLn = require('cmd-ln')
 var fs = require('fs')
 var lastSeq = require('./lib/last_seq')
+var remainingSpace = require('./lib/remaining_space')
+var exec = require('child_process').exec
 
 cmdLn(function(){
   db(function(err, db){
@@ -55,3 +57,22 @@ cmdLn(function(){
 
   })
 })
+
+function processModule(module, callback){
+  remainingSpace('/', function(err, bytes){
+    if (err){
+      console.error('remainingSpace: ' + err.message)
+      doit()
+    }else{
+      if (bytes < 1000000000){ // under 1Gb
+        exec('npm cache clean', doit)
+      }else{
+        doit()
+      }
+    }
+    
+    function doit(){
+      brshProcessModule(module, callback)
+    }
+  })
+}
