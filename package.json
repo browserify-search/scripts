@@ -13,7 +13,7 @@
     "JSONStream": "^0.8.4",
     "async": "^0.9.0",
     "browserifiability": "~0.1.0",
-    "brsh-process-module": "~0.1.0",
+    "brsh-process-module": "~0.2.0",
     "cmd-ln": "~0.1.0",
     "follow-registry": "0.0.3",
     "gaussian": "^1.0.0",
